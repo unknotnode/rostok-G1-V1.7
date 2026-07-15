@@ -1,0 +1,2900 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<title>Rost/0k v1.7</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Martian+Mono:wght@300;400&family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');
+:root {
+  --bg:#03060c; --bg2:#070b14; --panel:#0a0f1c;
+  --border:#111b2e; --accent:#5fffc0; --accent2:#ff5580;
+  --accent3:#9060ff; --accent4:#ffcc44; --dim:#1e2e48;
+  --text:#b8cce8; --textdim:#334a6a;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body {
+  font-family:'Martian Mono',monospace;
+  font-size:11px;
+  color:var(--text);
+  display:flex;
+  flex-direction:column;
+  height:100dvh;
+}
+
+#hdr {
+  flex-shrink:0;
+  height:42px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  gap:10px;
+  overflow:hidden;
+}
+.logo {
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:20px;
+  color:var(--accent);
+  letter-spacing:.04em;
+  flex-shrink:0;
+}
+.hbadge {
+  font-size:8px;
+  padding:2px 6px;
+  border:1px solid var(--dim);
+  color:var(--textdim);
+  letter-spacing:.12em;
+  white-space:nowrap;
+  transition:all .3s;
+}
+.hbadge.on { border-color:var(--accent); color:var(--accent); }
+.hbadge.slp { border-color:var(--accent3); color:var(--accent3); }
+.hbadge.hng { border-color:var(--accent2); color:var(--accent2); animation:pulse 1.4s infinite; }
+@keyframes pulse { 50%{opacity:.4;} }
+#hdr-right { margin-left:auto; display:flex; align-items:center; gap:8px; flex-shrink:0; }
+.ebar { width:50px; height:4px; background:var(--dim); border-radius:2px; overflow:hidden; }
+.efill {
+  height:100%;
+  border-radius:2px;
+  background:linear-gradient(90deg,var(--accent2),var(--accent4),var(--accent));
+  transition:width .5s;
+}
+.hval { color:var(--accent3); font-size:9px; min-width:28px; }
+
+#graph-wrap {
+  flex:1;
+  position:relative;
+  min-height:0;
+  overflow:hidden;
+  touch-action:pan-x pan-y pinch-zoom;
+}
+#gc { display:block; width:100%; height:100%; }
+.plabel {
+  position:absolute; top:7px; left:9px;
+  font-size:8px; color:var(--textdim);
+  letter-spacing:.16em; text-transform:uppercase;
+  pointer-events:none;
+}
+#node-count {
+  position:absolute; top:7px; right:9px;
+  font-size:9px; color:var(--textdim);
+}
+#focus-label {
+  position:absolute; bottom:8px; left:9px;
+  color:var(--accent3);
+  letter-spacing:.1em;
+  pointer-events:none;
+  font-style:italic;
+  font-family:'Cormorant Garamond',serif;
+  font-size:14px;
+}
+
+#vision {
+  flex-shrink:0;
+  height:38px;
+  background:var(--bg2);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  position:relative;
+  overflow:hidden;
+}
+#vc { display:block; width:100%; height:100%; }
+.vlabel {
+  position:absolute; top:3px; left:6px;
+  font-size:7px; color:var(--textdim);
+  letter-spacing:.16em;
+  pointer-events:none;
+}
+.vmetric {
+  position:absolute; top:3px; right:6px;
+  font-size:7px; color:var(--textdim);
+  letter-spacing:.08em;
+  pointer-events:none;
+}
+
+#reflection {
+  flex-shrink:0;
+  min-height:28px;
+  padding:6px 12px;
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:13px;
+  color:var(--accent4);
+  letter-spacing:.02em;
+  line-height:1.3;
+  transition:color .8s, opacity .8s;
+  display:flex;
+  align-items:center;
+}
+#reflection.fade { opacity:.35; }
+
+#input-zone {
+  flex-shrink:0;
+  padding:8px 10px;
+  display:flex;
+  gap:6px;
+  align-items:center;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+}
+#txt-input {
+  flex:1;
+  background:var(--bg);
+  border:1px solid var(--dim);
+  color:var(--text);
+  font-family:'Martian Mono',monospace;
+  font-size:10px;
+  padding:6px 8px;
+  outline:none;
+  border-radius:2px;
+  -webkit-appearance:none;
+  transition:border-color .2s;
+}
+#txt-input:focus { border-color:var(--accent3); }
+#txt-input::placeholder { color:var(--textdim); font-size:9px; }
+#btn-send {
+  background:var(--accent3);
+  border:none;
+  color:var(--bg);
+  font-family:'Martian Mono',monospace;
+  font-size:11px;
+  padding:6px 12px;
+  cursor:pointer;
+  border-radius:2px;
+  font-weight:700;
+  -webkit-appearance:none;
+  flex-shrink:0;
+}
+#btn-send:active { opacity:.7; }
+
+#controls {
+  flex-shrink:0;
+  padding:6px 10px;
+  background:var(--panel);
+  border-bottom:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.brow { display:flex; gap:5px; flex-wrap:wrap; }
+.btn {
+  background:transparent;
+  border:1px solid var(--dim);
+  color:var(--textdim);
+  font-family:'Martian Mono',monospace;
+  font-size:9px;
+  padding:5px 8px;
+  cursor:pointer;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  transition:all .2s;
+  -webkit-appearance:none;
+  border-radius:2px;
+}
+.btn:active { opacity:.7; }
+.btn.p { border-color:var(--accent3); color:var(--accent3); }
+.btn.s { border-color:var(--accent4); color:var(--accent4); }
+.btn.d { border-color:var(--accent2); color:var(--accent2); }
+.btn.g { border-color:var(--accent); color:var(--accent); }
+.cr { display:flex; align-items:center; gap:6px; }
+.cl { font-size:8px; color:var(--textdim); letter-spacing:.07em; width:60px; flex-shrink:0; }
+input[type=range] {
+  flex:1; -webkit-appearance:none; height:2px;
+  background:var(--dim); outline:none; cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px;
+  background:var(--accent); border-radius:50%; cursor:pointer;
+}
+.sv { color:var(--accent3); font-size:9px; min-width:28px; }
+
+#log {
+  flex-shrink:0;
+  height:90px;
+  overflow-y:auto;
+  padding:6px 10px;
+  font-size:8px;
+  line-height:1.7;
+  background:var(--bg);
+  -webkit-overflow-scrolling:touch;
+  border-bottom:1px solid var(--border);
+}
+#log::-webkit-scrollbar { width:2px; }
+#log::-webkit-scrollbar-thumb { background:var(--dim); }
+.le { color:var(--textdim); }
+.le.res { color:var(--accent); }
+.le.prb { color:var(--accent3); }
+.le.brth { color:var(--accent4); }
+.le.dth { color:var(--accent2); }
+.le.slp { color:#80b8ff; }
+.le.txt { color:var(--text); }
+.le.ans { color:var(--accent); font-style:italic; }
+
+#ftr {
+  flex-shrink:0;
+  height:26px;
+  background:var(--bg2);
+  display:flex;
+  align-items:center;
+  padding:0 12px;
+  gap:10px;
+  font-size:8px;
+  color:var(--textdim);
+  padding-bottom:calc(2px + var(--safe-bottom));
+}
+.fval { color:var(--accent3); }
+
+#sleep-overlay {
+  position:fixed; inset:0;
+  background:rgba(4,2,18,0);
+  pointer-events:none;
+  transition:background 1.5s;
+  z-index:20;
+}
+#sleep-overlay.on { background:rgba(4,2,18,.78); }
+#sleep-txt {
+  position:fixed; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  font-family:'Cormorant Garamond',serif;
+  font-style:italic;
+  font-size:clamp(20px,5vw,32px);
+  color:var(--accent3);
+  opacity:0;
+  transition:opacity 1s;
+  z-index:21;
+  letter-spacing:.1em;
+  pointer-events:none;
+  text-align:center;
+}
+#sleep-txt.on { opacity:1; }
+#res-flash {
+  position:fixed; inset:0;
+  background:rgba(95,255,192,0);
+  pointer-events:none;
+  z-index:15;
+  transition:background .08s;
+}
+#res-flash.on { background:rgba(95,255,192,.07); }
+</style>
+</head>
+<body>
+
+<div id="sleep-overlay"></div>
+<div id="sleep-txt">ночная оптимизация</div>
+<div id="res-flash"></div>
+
+<div id="hdr">
+  <span class="logo">Rost/0k</span>
+  <span class="hbadge" id="b-phase">рассвет</span>
+  <span class="hbadge" id="b-state">бодрствует</span>
+  <span class="hbadge" id="b-hunger">сыт</span>
+  <div id="hdr-right">
+    <div class="ebar"><div class="efill" id="efill" style="width:50%"></div></div>
+    <span class="hval" id="s-energy">50%</span>
+  </div>
+</div>
+
+<div id="graph-wrap">
+  <span class="plabel">ψ · геометрия · α-фокус</span>
+  <span id="node-count">N=0 E=0</span>
+  <canvas id="gc"></canvas>
+  <span id="focus-label"></span>
+</div>
+
+<div id="vision">
+  <span class="vlabel">α · внимание</span>
+  <span class="vmetric" id="vmet">τ=· H̄=·</span>
+  <canvas id="vc"></canvas>
+</div>
+
+<div id="reflection">·</div>
+
+<div id="input-zone">
+  <input type="text" id="txt-input"
+    placeholder="слово → если резонирует, ответит"
+    autocomplete="off" autocorrect="off"
+    autocapitalize="off" spellcheck="false">
+  <button id="btn-send">→</button>
+</div>
+
+<div id="controls">
+  <div class="brow">
+    <button class="btn p" id="bn-snd">♫ звук</button>
+    <button class="btn p" id="bn-img">◈ свет</button>
+    <button class="btn p" id="bn-sym">∂ символ</button>
+    <button class="btn s" id="bn-slp">💤 сон</button>
+    <button class="btn g" id="bn-pau">пауза</button>
+    <button class="btn d" id="bn-rst">сброс</button>
+    <button class="btn s" id="bn-anl">◉ анализ</button>
+    <button class="btn s" id="bn-mod">🎨 модальности</button>
+  </div>
+  <div class="cr">
+    <span class="cl">ε прозвон</span>
+    <input type="range" id="r-eps" min=".01" max=".3" step=".01" value=".07">
+    <span class="sv" id="v-eps">.07</span>
+  </div>
+  <div class="cr">
+    <span class="cl">скорость</span>
+    <input type="range" id="r-spd" min="1" max="40" step="1" value="8">
+    <span class="sv" id="v-spd">8</span>
+  </div>
+  <div class="cr">
+    <span class="cl">рост N</span>
+    <input type="range" id="r-grow" min="0" max="6" step="1" value="0">
+    <span class="sv" id="v-grow">0..1</span>
+  </div>
+</div>
+
+<div id="log"></div>
+
+<div id="ftr">
+  <span>шаг:<span class="fval" id="s-step">0</span></span>
+  <span>N:<span class="fval" id="s-nodes">0</span></span>
+  <span>△:<span class="fval" id="s-tri">0</span></span>
+  <span>рез:<span class="fval" id="s-res">0</span></span>
+  <span>отв:<span class="fval" id="s-ans">0</span></span>
+  <span>жизнь:<span class="fval" id="s-life">1</span></span>
+  <span style="margin-left:auto;color:var(--dim)">v1.7</span>
+</div>
+
+<script>
+// ================================================================
+// ПАРАМЕТРЫ
+// ================================================================
+const DT=.012, GAMMA=.011, NONLINEAR=.13, NORM_CLIP=2.2;
+const ETA_W=.085, ALPHA_PI=.030, ALPHA_H=.020, BETA_H=.010;
+const ETA_A=.020;
+const D_IN=32;
+const LR_T=.016;
+
+const H_CLIP=4.5;
+const H_SAT=2.0;
+const H0_NODE=20;   // v1.4c: насыщение суммарной памяти узла. узел с Hi>>H0
+                    // почти не получает преимущества — смягчённая иерархия,
+                    // опытные весомее, но монополия памяти невозможна.
+function hEff(h){ return h>0 ? Math.tanh(h/H_SAT)*H_SAT : 0; }
+// насыщение суммарной памяти узла: линейно при малых Hi, плато при больших
+function hSat(Hi){ return Math.tanh(Hi/H0_NODE)*H0_NODE; }
+
+// Голод и энергия
+const RESONANCE_THR=.055;
+const ENERGY_WORD=6;
+const ENERGY_BUTTON=3;
+const ENERGY_BG=1;               // 0→1: фоновое узнавание даёт минимальное подкрепление (патч 3)
+const ENERGY_DRAIN_BASE=.057;    // подобрано так чтобы при N=32 drain≈0.32 (как было)
+const ENERGY_DRAIN_MIN=.18;      // пол — даже маленькая система не живёт вечно
+const HUNGER_DEATH=0;
+
+// Топология
+// v1.6: MAX_NODES больше НЕ закон. Потолок N эмерджентен — его держит
+// энергетическая цена узла (drain растёт как sqrt(Nalive)). HARD_CAP —
+// лишь аварийный предохранитель против runaway-аллокации, не «биология».
+// v1.6: ЛИМИТЫ ПО УЗЛАМ СНЯТЫ. Структура (глаз/капсид/расслоение ядро-оболочка)
+// возникает САМА только при большом N — на фото v1.4 это N≈155. Поэтому потолок
+// поднят высоко: пусть растёт, пока физика и бюджет позволяют. HARD_CAP теперь —
+// лишь предохранитель от безудержной аллокации памяти, а не «биологический» предел.
+const HARD_CAP=600;              // потолок N: запас над рабочими N≈150, телефон тянет
+const MAX_DEGREE=18;
+const DEATH_THR=.006;
+
+// ── v1.6: МОРФОГЕНЕЗ — свободный N ──────────────────────────────
+// Узлы рождаются и растворяются по НЕВЯЗКЕ среды, а не по нашему порогу.
+// Невязка ребра (i,j) = насколько резко поле+память меняются между
+// соседями, которых текущая дискретизация не может представить гладко:
+//   resid(i,j) = W_PSI·|ψi−ψj|² + W_H·|Hi−Hj|   (только для связанных пар)
+// Порог рождения/растворения — адаптивный (медиана+MAD по живым рёбрам),
+// поэтому «что такое большая невязка» определяет сама система, а не число.
+const MORPH_W_PSI=1.0;           // вклад градиента ψ в невязку
+const MORPH_W_H=0.6;             // вклад разности памяти H в невязку (заказано: оба слоя)
+const MORPH_BIRTH_K=1.8;         // рождение, если resid > median + K·MAD
+const MORPH_DISSOLVE_K=-0.7;     // растворение, если resid < median + K·MAD (K<0 ⇒ ниже медианы)
+const MORPH_PERIOD=40;           // как часто среда пересматривает топологию (шагов)
+const MORPH_MAX_PER_STEP=1;      // не более одного события рождения за пересмотр (плавность)
+const MORPH_MIN_AGE=600;         // узел нельзя растворить раньше этого возраста (даём созреть)
+const MORPH_ALPHA_QUIET=.10;     // растворять только «тихие» узлы: α ниже этого
+const MORPH_FLOOR=8;             // нижний предел живых узлов — ниже среда не опускается
+const MORPH_RESID_HIST=240;      // окно истории невязок для медианы/MAD
+
+// ── v1.6: ЛЁГКОЕ РАСТВОРЕНИЕ по «бесполезности» (апоптоз без сигналов) ──
+// Развязано с ростом: НЕ зависит от текущей медианы невязки. Узел копит
+// quietStreak — шаги подряд, когда он почти не получает α И несёт малую
+// насыщенную память. Любой всплеск пользы обнуляет счётчик. Кто бесполезен
+// долго и подряд — растворяется. Хабы и рабочие узлы не трогаются никогда.
+// ── v1.6: БЮДЖЕТНОЕ РАСТВОРЕНИЕ (апоптоз по нехватке ресурса) ──────
+// Локального признака «груза» в системе нет (внимание мерцает, память растёт
+// у всех) — три попытки это показали. Единственный устойчивый сигнал —
+// ГЛОБАЛЬНЫЙ баланс энергии: если приток за окно не покрывает drain, организм
+// не может прокормить текущее N и сбрасывает узел из хвоста внимания. Голод
+// форсирует ужимание ДО смерти. Потолок N тем самым ставит метаболизм.
+const BUDGET_WINDOW=1000;        // окно скользящего энергобаланса (шагов)
+const BUDGET_DEFICIT=-9.0;       // v1.6: ослаблено — бюджет ловит только настоящий
+                                 // runaway-дефицит, не подрезает нормальный рост. N
+                                 // дорастает до потолка/режима глаза, тормоз лишь
+                                 // спасает от безудержного раздувания при голоде.
+const BUDGET_TAIL_FRAC=.35;      // кандидат на сброс — из нижних 35% α
+
+// v1.6 (план Б): КАПСИД БОЛЬШЕ НЕ ОТДЕЛЬНЫЙ РЕЖИМ. Раньше (до плана Б) был
+// аппарат принудительной инкапсуляции при голоде с остановкой по эйлеровой χ.
+// Он упёрся в то, что граф W — плотный объёмный, а не триангулированная
+// поверхность, поэтому χ не сходилась к 2. Теперь капсид — ФОРМА ПОКОЯ
+// свободной мембранной физики (K_MEMBRANE против K_REP): оболочка строится
+// сама как баланс распирания и поверхностного натяжения, без χ и без лавины.
+
+// Циркадный — орбитальная механика (v1.7)
+// Солнце: суточная высота над горизонтом → световой фон (зенит = максимум).
+// Луна: обращение вокруг барицентра Земля–Луна, отражённый свет ночью.
+const DAY_LEN     = 1600;        // длина солнечных суток в шагах (= старый CIRCADIAN)
+const CIRCADIAN   = DAY_LEN;     // alias для совместимости со старым кодом
+const MOON_PERIOD = 1600*27.3/24;// лунный месяц ≈ 27.3 суток (синодика ниже выводится сама)
+// Барицентр: радиус орбиты тела ∝ массе ПАРТНЁРА (тяжёлое тело почти неподвижно).
+const M_EARTH = 81.3;            // масса Земли в массах Луны (реальное соотношение)
+const M_MOON  = 1.0;
+const BARY_A  = 0.30;            // большая полуось системы (в условных экранных единицах)
+const SUN_TILT = 0.0;            // наклон эклиптики к «горизонту» наблюдателя (0..1), 0 = солнце доходит до зенита
+const MOON_ALBEDO = 0.16;        // во сколько раз ночной лунный фон слабее полуденного солнечного
+
+// α-внимание
+const ALPHA_LR=.06;
+const ALPHA_NOISE_BASE=.04;
+const TAU_MIN=.15, TAU_MAX=2.5;
+const ALPHA_GAIN=3.0;
+const ALPHA_LEARN_GAIN=2.0;
+const ATT_FOCUS=.04;
+const ATT_FOCUS_THR=.3;
+const ANSWER_RES_MULT=1.2;       // 1.6→1.2: окно ответа шире
+const ANSWER_HISTORY=50;
+
+const ANSWER_ENTROPY_MAX=.75;    // .55→.75: «рабочий фокус» теперь тоже считается фокусом
+
+const ECHO_STRENGTH=.18;       // v0.96: .28→.18, мягче наследование структуры
+const ECHO_WORDS_KEEP=6;
+
+// v1.6: СМЕРТЬ ПО СТАРОСТИ УБРАНА как закон. В 1.5 MAX_AGE был костылём
+// против NaN (наблюдался ~94k, N=144). Настоящая причина — раскрутка петли
+// ψ→R→ψ; в 1.6 она лечится насыщением R (см. LOOP_* и updateField/updateGeom),
+// а монотонный рост N к зоне переполнения снят морфогенезом (растворение).
+// Поэтому смерть снова честная — только голод. Эхо различает старость по
+// прожитым шагам (для ECHO_WORDS_KEEP_OLD), но это уже не причина смерти.
+const OLD_AGE_HINT=120000;     // «прожил долго» для богатого эха — НЕ предел жизни
+const ECHO_WORDS_KEEP_OLD=12;  // долгая жизнь сохраняет вдвое больше слов
+
+// ── v1.6: СТАБИЛИЗАЦИЯ ПЕТЛИ ψ→R→ψ (лечение корня NaN) ───────────
+// R растёт как ai·aj·hEff(H)·gw (произведение амплитуд) и кормит ψ обратно
+// членом rR·FB. Без насыщения это экспонента → Inf → NaN. Насыщаем оба конца:
+const LOOP_R_CLIP=2.5;           // жёсткий потолок элемента R
+const LOOP_FB=0.04;              // прежний коэффициент обратной связи R→ψ (был .04)
+const LOOP_FB_SAT=1.2;           // насыщение tanh на члене обратной связи в ψ
+
+const MODALITIES=['sound','image','symbol'];
+const MOD_LR=.04;
+const MOD_NOISE=.15;
+
+// ── ЧАСТОТНЫЕ ОРГАНЫ (v1.3) ─────────────────────────────────────
+// каждый узел крутит свою фазу со своей частотой ω (от широты на сфере).
+// два узла «слышат» друг друга, когда их ω близки — спектральная
+// селективность. звук = низкая полоса, свет = высокая полоса.
+// символ = направление (4 стороны) — не частота, а геометрия наклона.
+const BAND_SOUND=[0.04,0.12];      // длинная волна — медленная прецессия
+const BAND_LIGHT=[0.30,0.70];      // короткая волна — быстрая прецессия
+const OMEGA_PSI=0.6;               // сила собственной прецессии узла в ψ
+let nodeOmega=null;                // Float64Array(N), частота узла от широты
+let symSide=0;                     // циклический счётчик стороны для кнопки символа
+const SIDE_GLYPH=['→','↑','←','↓'];
+
+// ── v0.97: ЭХО-ПЕТЛЯ ────────────────────────────────────────────
+// узлы с накопленной модальной памятью могут «излучать» обратно
+// в собственную ψ — слабый внутренний голос
+const ECHO_LOOP_PERIOD=8;        // каждые N шагов главного tick
+const ECHO_LOOP_ALPHA_THR=.15;   // только узлы с α выше этого
+const ECHO_LOOP_STRENGTH=.06;    // амплитуда эхо относительно ψ
+const ECHO_LOOP_REFRACTORY=.7;   // затухание для часто-излучающих
+const ECHO_LOOP_MAX_SELF=12;     // защита от самозацикливания: не больше столько за одно эхо
+
+// ── v1.1: ГЕОМЕТРИЧЕСКОЕ ПОЛЕ ───────────────────────────────────
+// W теперь не хранится явно — вычисляется из 3D расстояний
+// σ — радиус взаимодействия: узлы «чувствуют» друг друга в пределах σ
+const GEO_SIGMA=0.55;          // радиус гауссова ядра связи
+// v1.5: радиус планеты. росток (радиус ~0.88) лежит на поверхности.
+// 25× — поверхность под ростком почти плоская, но кривизна/горизонт есть.
+const PLANET_R=22;
+const GEO_SIGMA2=GEO_SIGMA*GEO_SIGMA;
+const GEO_W_MIN=0.008;         // порог ниже которого связь считается нулевой
+const GEO_PSI_FORCE=0.008;     // v1.2: снижен — был причиной схлопывания
+const GEO_H_DECAY=0.008;       // замедленный распад H (геометрия стабильнее)
+// треугольник рождается когда три узла синхронизированы (низкая
+// когерентная дистанция) и их α достаточно высоко.
+// живёт, пока синхронизация держится; влияет обратно на ψ.
+const MAX_TRIANGLES=800;
+const TRI_BIRTH_THR=1.2;         // порог coherence3
+const TRI_ALPHA_THR_REL=0.35;    // v1.2: ОТНОСИТЕЛЬНЫЙ порог — доля от max alpha
+const TRI_DECAY=0.014;
+const TRI_BACKREACTION=0.0010;
+const TRI_BIRTH_INTERVAL=20;
+
+// ================================================================
+// СОСТОЯНИЕ
+// ================================================================
+let N=32;
+let step=0, paused=false, sleeping=false, dead=false;
+let speed=8, eps=.07;
+// v1.6: ступени скорости роста N (пары min..max узлов за вызов morphStep).
+// Ползунок «рост N» индексирует этот массив. Нижняя 0 = рост может пропускаться
+// (мягко); нижняя 1 = хотя бы один всегда (напористо). Метаболизм всё равно
+// гейтит рост сверху: при дефиците бюджета рождение запрещено (не растим в долг).
+const GROW_STAGES=[[0,1],[0,2],[0,3],[1,3],[1,4],[1,5],[2,6]];
+let growStage=0;   // индекс в GROW_STAGES
+let energy=50, totalRes=0, totalAns=0;
+let circAngle=0, circPhase='рассвет', sleepTimer=1200;
+// орбитальное состояние (v1.7)
+let sunAlt=0;        // высота Солнца над горизонтом, -1..1 (1 = зенит)
+let sunLight=0;      // световой фон от Солнца, 0..1 (max(sunAlt,0) с наклоном)
+let moonPhase=0;     // освещённая доля Луны, 0..1 (0 = новолуние, 1 = полнолуние)
+let moonAlt=0;       // высота Луны, -1..1
+let moonLight=0;     // ночной фон от Луны, 0..1
+let dayLight=0;      // суммарный фон = max(sunLight, moonLight)
+// позиции тел вокруг барицентра (для мини-карты неба)
+let earthXY=[0,0], moonXY=[0,0], sunDir=[0,0];
+
+let psiRe,psiIm,W,Pi,H,A,R,TRe,TIm,pos=[];
+let alpha;
+let alphaLogit;
+let nodeMemory=[];
+let modPref=[];
+let echoFatigue=null;   // v0.97: усталость узла от излучений (рефрактерность)
+// ── v1.6: МОРФОГЕНЕЗ ────────────────────────────────────────────
+// alive[i] — жив ли узел (tombstone-схема: мёртвые узлы НЕ удаляются из
+// массивов, а помечаются мёртвыми и пропускаются всеми циклами). Индексы
+// поэтому стабильны навсегда — никакой перенумерации, никакого рассинхрона
+// с треугольниками. Длина массивов (N) только растёт; число ЖИВЫХ (Nalive)
+// колеблется свободно. Вся физика, цена энергии и пороги считаются по живым.
+let alive=null;         // Uint8Array(N): 1=жив, 0=надгробие
+let Nalive=32;          // число живых узлов (то, что раньше было N)
+let nodeAge=null;       // Float64Array(N): возраст узла в шагах (для MORPH_MIN_AGE)
+// v1.6: бюджетный баланс энергии (скользящее окно) для растворения
+let eInAcc=0;           // накопленный приток за текущее окно
+let eOutAcc=0;          // накопленный drain за текущее окно
+let budgetClock=0;      // счётчик шагов окна
+let budgetBalance=0;    // v1.6: последний баланс окна (приток−drain), для гейта роста
+let residHist=[];       // история невязок рёбер (для адаптивных порогов морфогенеза)
+// v1.6 (план Б): режима инкапсуляции больше нет — капсид эмерджентен.
+// eulerChar() сохранён как ДИАГНОСТИКА (показать χ в HUD), но ничего не гейтит.
+let lastAnswerStep=-9999;
+let lastAnswer='';
+let resonanceHistory=[];
+let lifeNum=1;
+let lastSleepKind='';
+let echoH=null;
+let echoN=0;
+let echoPos=null;
+let echoAlpha=null;     // v0.94: профиль внимания прошлой жизни → темперамент
+let echoWords=[];
+let echoReady=false;
+
+// v0.99: симплициальный слой
+let S2=[];     // треугольники: [[i,j,k], ...]
+let H2=[];     // память каждого треугольника (0..1)
+let S2age=[];  // возраст (шаги) для контроля распада
+// наследование через эхо:
+let echoS2=null, echoH2=null;
+
+const logQ=[];
+
+function slog(msg,cls='le'){
+  logQ.push({msg,cls});
+  if(logQ.length>120)logQ.shift();
+  const el=document.getElementById('log');
+  el.innerHTML=logQ.map(e=>`<div class="${e.cls}">${e.msg}</div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
+
+function setReflection(txt, fade){
+  const el=document.getElementById('reflection');
+  el.textContent=txt;
+  if(fade) el.classList.add('fade'); else el.classList.remove('fade');
+}
+
+// ================================================================
+// ЗАЩИТА ОТ NaN (v0.98)
+// ================================================================
+function healthCheck(){
+  let fixed=0;
+  for(let i=0;i<N;i++){
+    if(!isFinite(psiRe[i])||!isFinite(psiIm[i])||Math.abs(psiRe[i])>10||Math.abs(psiIm[i])>10){
+      psiRe[i]=(Math.random()-.5)*.2;
+      psiIm[i]=(Math.random()-.5)*.2;
+      fixed++;
+    }
+  }
+  for(let k=0;k<N*D_IN;k++){
+    if(!isFinite(TRe[k])||Math.abs(TRe[k])>1.5){TRe[k]=(Math.random()-.5)*.1;fixed++;}
+    if(!isFinite(TIm[k])||Math.abs(TIm[k])>1.5){TIm[k]=(Math.random()-.5)*.1;fixed++;}
+  }
+  for(let k=0;k<N*N;k++){
+    if(!isFinite(H[k])||H[k]<0) H[k]=0;
+    if(!isFinite(W[k])||W[k]<0) W[k]=0;
+  }
+  if(fixed>0) slog('⚕ healthCheck: восстановлено '+fixed,'le dth');
+}
+
+// ================================================================
+// ИНИЦИАЛИЗАЦИЯ
+// ================================================================
+function initSystem(n){
+  N=n; dead=false;
+  Nalive=n;                          // v1.6: при старте все живы
+  alive=new Uint8Array(N); alive.fill(1);
+  nodeAge=new Float64Array(N);       // все узлы возраста 0
+  eInAcc=0; eOutAcc=0; budgetClock=0; budgetBalance=0;
+  residHist=[];
+  psiRe=new Float64Array(N); psiIm=new Float64Array(N);
+  psiRe[Math.floor(N/3)]=1.0; psiRe[Math.floor(2*N/3)]=.5;
+  W=new Float64Array(N*N); Pi=new Float64Array(N*N);
+  H=new Float64Array(N*N); A=new Float64Array(N*N);
+  R=new Float64Array(N*N);
+  TRe=new Float64Array(N*D_IN); TIm=new Float64Array(N*D_IN);
+  alphaLogit=new Float64Array(N);
+  alpha=new Float64Array(N);
+  nodeMemory=[];
+  modPref=[];
+  echoFatigue=new Float64Array(N);  // v0.97: 0..1, усталость от излучений
+  for(let i=0;i<N;i++){
+    R[i*N+i]=.05;
+    alphaLogit[i]=(Math.random()-.5)*.1;
+    nodeMemory.push(new Map());
+    const mp=new Float64Array(3);
+    for(let k=0;k<3;k++) mp[k]=Math.random()*.03;  // v1.6: неотрицательные доли
+    modPref.push(mp);
+  }
+  for(let i=0;i<N*D_IN;i++){
+    TRe[i]=(Math.random()-.5)*.07;
+    TIm[i]=(Math.random()-.5)*.07;
+  }
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+    const v=Math.random()*.016;
+    W[i*N+j]=v; W[j*N+i]=v;
+  }
+
+  buildPos();
+  initVel();
+  initOmega();   // v1.3: частоты узлов от широты на сфере
+  // v1.5: камера сразу на центроиде ростка (иначе первый кадр смотрит в ядро)
+  { let cx=0,cy=0,cz=0; for(let i=0;i<N;i++){cx+=pos[i][0];cy+=pos[i][1];cz+=pos[i][2];}
+    camTarget=[cx/N,cy/N,cz/N]; }
+  if(echoReady && echoH && echoN>0){
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+      const oi=Math.floor(i*echoN/N);
+      const oj=Math.floor(j*echoN/N);
+      H[i*N+j]=echoH[oi*echoN+oj]*ECHO_STRENGTH;
+    }
+    let hMax=0; for(let k=0;k<N*N;k++) if(H[k]>hMax) hMax=H[k];
+    if(hMax>0) for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+      const h=H[i*N+j]/hMax;
+      if(h>.4){
+        const boost=.025*h;
+        W[i*N+j]+=boost; W[j*N+i]+=boost;
+      }
+    }
+    // v1.5: позиции НЕ наследуем — росток всегда рождается на поверхности
+    // планеты (buildPos). наследуется структура (H, память, α, треугольники),
+    // а форму он отращивает заново на земле. перенос старых координат бросил бы
+    // его в ядро планеты.
+    if(false && echoPos && echoPos.length>0){
+      for(let i=0;i<N;i++){
+        if(Math.random()<.5){
+          const src=echoPos[i%echoPos.length];
+          pos[i]=[src[0]||0, src[1]||0, src[2]||0];
+        }
+      }
+    }
+    if(echoWords.length>0){
+      const hSum=new Float64Array(N);
+      for(let i=0;i<N;i++) for(let j=0;j<N;j++) hSum[i]+=H[i*N+j];
+      let totalH=0; for(let i=0;i<N;i++) totalH+=hSum[i];
+      if(totalH>0) for(const wObj of echoWords){
+        let r=Math.random()*totalH, acc=0, chosen=0;
+        for(let i=0;i<N;i++){acc+=hSum[i]; if(acc>=r){chosen=i;break;}}
+        const newCount=Math.max(1,Math.floor(wObj.count*ECHO_STRENGTH));
+        nodeMemory[chosen].set(wObj.word, newCount);
+      }
+    }
+    // v0.94: наследование темперамента через α-профиль
+    // ресэмплируем echoAlpha на новый размер, добавляем как bias к alphaLogit
+    if(echoAlpha && echoAlpha.length>0){
+      for(let i=0;i<N;i++){
+        const oi=Math.floor(i*echoN/N);
+        alphaLogit[i]+=echoAlpha[oi]*0.2;  // v0.96: 0.6→0.2, направление а не сила
+      }
+    }
+    echoReady=false;
+    const wordStr=echoWords.length>0
+      ? ' · эхо: '+echoWords.slice(0,3).map(w=>'"'+w.word+'"').join(' ')
+      : '';
+    setReflection('жизнь #'+lifeNum+wordStr, false);
+    slog('◌ перерождение из эха (жизнь #'+lifeNum+')','le brth');
+  } else {
+    setReflection('пробуждение. структуры ещё не определены.');
+  }
+
+  updateAlpha(0);
+  // v0.99: инициализация симплициального слоя
+  S2=[]; H2=[]; S2age=[]; S2keys=new Set();
+  if(echoS2 && echoS2.length>0){
+    // наследуем треугольники из прошлой жизни, ослабляем память
+    for(let s=0;s<echoS2.length;s++){
+      const tri=echoS2[s];
+      if(tri[0]<N && tri[1]<N && tri[2]<N){
+        const key=triKey(tri[0],tri[1],tri[2]);
+        if(!S2keys.has(key)){
+          S2.push([...tri]);
+          H2.push(echoH2[s]*0.5);  // ослабляем при перерождении
+          S2age.push(0);
+          S2keys.add(key);
+        }
+      }
+    }
+    echoS2=null; echoH2=null;
+    if(S2.length>0) slog('◌ унаследовано △: '+S2.length,'le brth');
+  }
+  slog('инициализация: '+N+' узлов','le brth');
+}
+
+function buildPos(){
+  pos=[];
+  if(N===0) return;
+  // v1.5: росток — маленькая сфера, лежащая на поверхности планеты.
+  // центр ростка поднят на (R_PLANET + его радиус) по оси Y, чтобы он
+  // стартовал чуть над землёй и осел под гравитацией.
+  const phi=Math.PI*(Math.sqrt(5)-1);
+  const rb=0.88;                    // радиус самого ростка
+  const cy=PLANET_R+rb*0.6;         // центр ростка над поверхностью
+  for(let i=0;i<N;i++){
+    const y=1-2*i/(Math.max(N-1,1));
+    const r=Math.sqrt(Math.max(0,1-y*y));
+    const th=phi*i;
+    pos.push([r*Math.cos(th)*rb, cy + y*rb, r*Math.sin(th)*rb]);
+  }
+}
+
+// v1.3: собственные частоты узлов берутся из их широты на капсиде.
+// полюса — низкочастотные (бас), экватор — высокочастотные.
+// орган неоднороден: есть зоны звука и зоны света.
+function initOmega(){
+  if(!nodeOmega||nodeOmega.length!==N) nodeOmega=new Float64Array(N);
+  for(let i=0;i<N;i++){
+    const y=pos[i] ? pos[i][1] : 0;
+    const t=(y/0.88+1)/2;                  // 0..1 по широте
+    nodeOmega[i]=BAND_SOUND[0]+t*(BAND_LIGHT[1]-BAND_SOUND[0]);
+  }
+}
+
+// ================================================================
+// 3D ФИЗИКА УЗЛОВ
+// ================================================================
+// скорости узлов в 3D
+let vel=[];
+
+function initVel(){
+  vel=[];
+  for(let i=0;i<N;i++) vel.push([0,0,0]);
+}
+
+function physics3D(){
+  if(N===0) return;
+  const K_REP=0.006;    // v1.2: сильнее — предотвращает схлопывание
+  // v1.4: грани больше не тянут к центру — они держат равновесную ПЛОЩАДЬ.
+  // оболочка возникает как баланс натяжения граней, без внешней сферы.
+  const K_AREA=0.10;    // жёсткость натяжения грани
+  const AREA0=0.13;     // равновесная площадь грани (~равностор. треуг. со стороной σ)
+  // v1.5: ПЛАНЕТА. центр мира в начале координат. росток лежит на поверхности
+  // сферы радиуса R_PLANET. K_CENTER теперь держит росток вместе (тяга к его
+  // собственному центроиду), а НЕ к нулю — иначе он упал бы в ядро планеты.
+  const K_COHERE=0.0010;// v1.4c: сплочённость ростка к центроиду (дала глаз/капсид сама)
+  const G_GRAV=0.0;     // гравитация к планете убрана (росток свободен)
+                        // в ~5 раз слабее натяжения грани — росток ляжет,
+                        // сплющится, но форма устоит, не растечётся.
+  const R_PLANET=PLANET_R; // радиус планеты (≈25× ростка), задан глобально
+  const DAMP=0.78;
+  const DT3=0.013;
+  const MIN_DIST=0.08;  // v1.2: жёсткий минимум расстояния
+
+  // центр масс ростка — к нему тянет K_COHERE (сплочённость, не падение в ядро)
+  let cmx=0,cmy=0,cmz=0,cn=0;
+  for(let i=0;i<N;i++){ if(!alive[i])continue; cmx+=pos[i][0]; cmy+=pos[i][1]; cmz+=pos[i][2]; cn++; }
+  if(cn>0){ cmx/=cn; cmy/=cn; cmz/=cn; }
+
+  const fx=new Float64Array(N), fy=new Float64Array(N), fz=new Float64Array(N);
+
+  for(let i=0;i<N;i++){ if(!alive[i])continue; for(let j=i+1;j<N;j++){ if(!alive[j])continue;
+    const dx=pos[i][0]-pos[j][0];
+    const dy=pos[i][1]-pos[j][1];
+    const dz=pos[i][2]-pos[j][2];
+    const d2=dx*dx+dy*dy+dz*dz;
+    const d=Math.sqrt(d2)+0.0001;
+    // жёсткое отталкивание на малых расстояниях
+    const f = d < MIN_DIST
+      ? K_REP*10/(d2+0.0001)   // очень сильно если слишком близко
+      : K_REP/d2;
+    fx[i]+=f*dx; fy[i]+=f*dy; fz[i]+=f*dz;
+    fx[j]-=f*dx; fy[j]-=f*dy; fz[j]-=f*dz;
+  }}
+
+  // v1.4: НАТЯЖЕНИЕ ГРАНЕЙ — каждая грань держит равновесную площадь A0.
+  // грань меньше A0 распирается, больше — стягивается. сила лежит в плоскости
+  // грани (перпендикулярно противоположному ребру), поэтому грань держит форму,
+  // а не схлопывается в точку. сумма всех граней = упругая оболочка.
+  for(let s=0;s<S2.length;s++){
+    const [a,b,c]=S2[s];
+    if(a>=N||b>=N||c>=N) continue;
+    if(!alive[a]||!alive[b]||!alive[c]) continue;  // v1.6
+    const h=H2[s]; if(h<0.02) continue;
+    const ax=pos[a][0], ay=pos[a][1], az=pos[a][2];
+    const bx=pos[b][0], by=pos[b][1], bz=pos[b][2];
+    const cx=pos[c][0], cy=pos[c][1], cz=pos[c][2];
+    // рёбра от a
+    const e1x=bx-ax, e1y=by-ay, e1z=bz-az;
+    const e2x=cx-ax, e2y=cy-ay, e2z=cz-az;
+    // нормаль = e1 × e2, |нормаль| = 2·площадь
+    const nx=e1y*e2z-e1z*e2y;
+    const ny=e1z*e2x-e1x*e2z;
+    const nz=e1x*e2y-e1y*e2x;
+    const twoA=Math.sqrt(nx*nx+ny*ny+nz*nz)+1e-9;
+    const area=twoA*0.5;
+    // упругий коэффициент: натяжение тем сильнее, чем сильнее грань (h)
+    const k=K_AREA*h*(area-AREA0)/twoA;  // знак: area>A0 → стянуть
+    // единичная нормаль
+    const ux=nx/twoA, uy=ny/twoA, uz=nz/twoA;
+    // ∂A/∂r = (нормаль × ребро_противоположное)/(4A); сила = -k_elastic·∂A/∂r
+    // для вершины a противоположное ребро (c-b); для b: (a-c); для c: (b-a)
+    const edges=[
+      [a, cx-bx, cy-by, cz-bz],
+      [b, ax-cx, ay-cy, az-cz],
+      [c, bx-ax, by-ay, bz-az]
+    ];
+    for(const [vi, ex, ey, ez] of edges){
+      // grad = û × ребро  (направление в плоскости грани, наружу/внутрь)
+      const gx=uy*ez-uz*ey;
+      const gy=uz*ex-ux*ez;
+      const gz=ux*ey-uy*ex;
+      // сила возврата площади: -(area-A0)·grad·жёсткость
+      fx[vi]-=k*gx; fy[vi]-=k*gy; fz[vi]-=k*gz;
+    }
+  }
+
+  // v1.6: физика как в 1.4c — простая когезия к центроиду + грани + отталкивание.
+  // Капсид/глаз/расслоение ядро-оболочка возникают САМИ при большом N (видно на
+  // фото v1.4: тёмная линза-глаз, свёрнутый капюшон-оболочка). Не форсируем силами.
+  for(let i=0;i<N;i++){
+    if(!alive[i]) continue;
+    if(!vel[i]) vel[i]=[0,0,0];
+    const px=pos[i][0], py=pos[i][1], pz=pos[i][2];
+    vel[i][0]=(vel[i][0]+fx[i]*DT3)*DAMP - (px-cmx)*K_COHERE;
+    vel[i][1]=(vel[i][1]+fy[i]*DT3)*DAMP - (py-cmy)*K_COHERE;
+    vel[i][2]=(vel[i][2]+fz[i]*DT3)*DAMP - (pz-cmz)*K_COHERE;
+    pos[i][0]+=vel[i][0];
+    pos[i][1]+=vel[i][1];
+    pos[i][2]+=vel[i][2];
+  }
+}
+
+// ================================================================
+// ЛАПЛАСИАН — v1.1: веса из геометрии, W = кеш расстояний
+// ================================================================
+function buildL(){
+  const LsRe=new Float64Array(N*N), LAIm=new Float64Array(N*N);
+  // пересчитываем W из текущих 3D позиций (v1.6: только между живыми узлами)
+  for(let i=0;i<N;i++){ if(!alive[i])continue; for(let j=i+1;j<N;j++){ if(!alive[j])continue;
+    const dx=pos[i][0]-pos[j][0];
+    const dy=pos[i][1]-pos[j][1];
+    const dz=pos[i][2]-pos[j][2];
+    const r2=dx*dx+dy*dy+dz*dz;
+    // гауссово ядро: близкие узлы сильно связаны, дальние — нет
+    const w=Math.exp(-r2/GEO_SIGMA2);
+    const wEff=w>GEO_W_MIN ? w : 0;
+    W[i*N+j]=wEff; W[j*N+i]=wEff;
+  }}
+  // строим лапласиан из обновлённых W (надгробия → нулевая строка/столбец)
+  for(let i=0;i<N;i++){
+    if(!alive[i]) continue;   // строка надгробия остаётся нулевой
+    let d=0; for(let j=0;j<N;j++){ if(!alive[j])continue; d+=W[i*N+j]; }
+    for(let j=0;j<N;j++){
+      if(!alive[j]) continue;
+      LsRe[i*N+j]=i===j?d:-W[i*N+j];
+      LAIm[i*N+j]=A[i*N+j];
+    }
+  }
+  return{LsRe,LAIm};
+}
+
+// ================================================================
+// α-ВНИМАНИЕ
+// ================================================================
+function currentTau(){
+  const t=energy/100;
+  return TAU_MIN+(TAU_MAX-TAU_MIN)*t;
+}
+
+function softmax(logits, tau){
+  const out=new Float64Array(logits.length);
+  let mx=-Infinity;
+  for(let i=0;i<logits.length;i++) if(logits[i]/tau>mx) mx=logits[i]/tau;
+  let s=0;
+  for(let i=0;i<logits.length;i++){
+    out[i]=Math.exp(logits[i]/tau-mx);
+    s+=out[i];
+  }
+  if(s<1e-12) return out;
+  for(let i=0;i<logits.length;i++) out[i]/=s;
+  return out;
+}
+
+function entropy(p){
+  // v1.6: энтропия нормируется по ЖИВЫМ узлам (Nalive), не по длине массива,
+  // иначе накопленные надгробия занижали бы H̄(α) и ломали гейт ответа.
+  let h=0;
+  for(let i=0;i<p.length;i++) if(p[i]>1e-12) h-=p[i]*Math.log(p[i]);
+  const denom=Math.log(Math.max(2,Nalive));
+  return h/denom;
+}
+
+function updateAlpha(predErr){
+  const tau=currentTau();
+  const noise=ALPHA_NOISE_BASE*(0.4+0.6*energy/100);
+
+  let meanLogit=0;
+  for(let i=0;i<N;i++) meanLogit+=alphaLogit[i];
+  meanLogit/=N;
+  let aMax=0;
+  for(let i=0;i<N;i++) if(alpha[i]>aMax) aMax=alpha[i];
+  const focusFactor=Math.max(0, aMax-ATT_FOCUS_THR);
+  const pullForce=ATT_FOCUS*focusFactor;
+
+  for(let i=0;i<N;i++){
+    let Hi=0, geoDeg=0;
+    for(let j=0;j<N;j++){
+      Hi+=hEff(H[i*N+j]);
+      if(W[i*N+j]>GEO_W_MIN) geoDeg++; // геометрическая степень
+    }
+    const amp=Math.sqrt(psiRe[i]**2+psiIm[i]**2);
+    // v1.4b: ЦЕНА КОНЦЕНТРАЦИИ — сверхлинейна по степени.
+    // линейный cost проигрывал, т.к. выгода Hi тоже росла со связями → один узел
+    // становился олигархом (degree~18, Hi~200, весь α утекал в него).
+    // квадратичная цена даёт оптимальную степень: выше неё расти невыгодно.
+    // это латеральное торможение через метаболизм — хаб дорого содержать.
+    const cost=geoDeg*.004 + geoDeg*geoDeg*.030;
+    const target=hSat(Hi)*1.2 + amp*0.8 - cost + predErr*0.3*Math.random();
+    alphaLogit[i]+=ALPHA_LR*(target-alphaLogit[i]) + (Math.random()-.5)*noise;
+    alphaLogit[i]+=pullForce*(meanLogit-alphaLogit[i]);
+    alphaLogit[i]*=.998;
+  }
+  alpha=softmax(alphaLogit, tau);
+  // v1.6: надгробия не получают внимания. Обнуляем и перенормируем по живым,
+  // иначе мёртвые узлы крали бы долю α и искажали энтропию-гейт ответа.
+  let asum=0;
+  for(let i=0;i<N;i++){ if(!alive[i]) alpha[i]=0; asum+=alpha[i]; }
+  if(asum>1e-12) for(let i=0;i<N;i++) alpha[i]/=asum;
+}
+
+function alphaArgmax(){
+  let mx=-1,k=0;
+  for(let i=0;i<N;i++) if(alpha[i]>mx){mx=alpha[i];k=i;}
+  return k;
+}
+
+function chooseModalityByAlpha(){
+  const agg=[0,0,0];
+  for(let i=0;i<N;i++) for(let k=0;k<3;k++){
+    agg[k]+=alpha[i]*modPref[i][k];
+  }
+  for(let k=0;k<3;k++) agg[k]+=(Math.random()-.5)*MOD_NOISE;
+  let mx=Math.max(agg[0],agg[1],agg[2]);
+  const ex=[Math.exp(agg[0]-mx),Math.exp(agg[1]-mx),Math.exp(agg[2]-mx)];
+  const s=ex[0]+ex[1]+ex[2];
+  const r=Math.random()*s;
+  let acc=0;
+  for(let k=0;k<3;k++){acc+=ex[k]; if(r<=acc) return MODALITIES[k];}
+  return MODALITIES[2];
+}
+
+function reinforceModality(focusNode, modIdx){
+  // v1.6 (вариант 2): вход формирует модальность узла. Раньше подкреплялся
+  // только фокусный узел — специализация была слишком разреженной, кластеры
+  // не успевали разойтись по модальностям. Теперь подкрепляем ВСЕ узлы,
+  // которые активно участвовали (по α), пропорционально вниманию. Так узлы,
+  // часто ловящие звук, становятся «звуковыми», ловящие свет — «световыми»,
+  // и кластеры получают шанс специализироваться (разделение труда).
+  let aMaxNow=0;
+  for(let i=0;i<N;i++) if(alive[i]&&alpha[i]>aMaxNow) aMaxNow=alpha[i];
+  if(aMaxNow<1e-9) aMaxNow=1;
+  for(let i=0;i<N;i++){
+    if(!alive[i]) continue;
+    const aRel=alpha[i]/aMaxNow;
+    if(aRel<0.15) continue;                 // только заметно участвовавшие узлы
+    const mp=modPref[i];
+    mp[modIdx]+=MOD_LR*aRel;                 // подкрепление ∝ вниманию узла
+    // мягкая нормировка к симплексу без ухода в минус:
+    const s=mp[0]+mp[1]+mp[2];
+    if(s>1){ mp[0]/=s; mp[1]/=s; mp[2]/=s; } // держим сумму ≤1, доли неотрицательны
+  }
+}
+
+function pickBirthParent(){
+  const score=new Float64Array(N);
+  let mx=0;
+  let aMaxNow=0;
+  for(let i=0;i<N;i++) if(alpha[i]>aMaxNow) aMaxNow=alpha[i];
+  if(aMaxNow<1e-9) aMaxNow=1;
+  for(let i=0;i<N;i++){
+    let s=0; for(let j=0;j<N;j++) s+=hEff(H[i*N+j]);
+    const aRel=alpha[i]/aMaxNow;
+    score[i]=hSat(s)*(0.3+aRel*0.7);  // v1.4c: насыщение — не даём олигарху захватить рождение
+    if(score[i]>mx) mx=score[i];
+  }
+  if(mx<1e-9) return -1;
+  const tot=score.reduce((a,b)=>a+b,0);
+  if(tot<1e-9) return -1;
+  let r=Math.random()*tot, acc=0;
+  for(let i=0;i<N;i++){acc+=score[i]; if(r<=acc) return i;}
+  return N-1;
+}
+
+function captureEcho(byAge){
+  echoH=new Float64Array(N*N);
+  echoH.set(H);
+  echoN=N;
+  echoPos=pos.map(p=>[p[0],p[1]]);
+  // v0.94: сохраняем α-профиль — наследуемый «темперамент»
+  echoAlpha=new Float64Array(N);
+  echoAlpha.set(alpha);
+  const all=new Map();
+  for(const m of nodeMemory) for(const [w,c] of m){
+    all.set(w,(all.get(w)||0)+c);
+  }
+  // v1.5: старость сохраняет вдвое больше слов — богаче опыт
+  const keep = byAge ? ECHO_WORDS_KEEP_OLD : ECHO_WORDS_KEEP;
+  echoWords=[...all].map(([w,c])=>({word:w,count:c}))
+    .sort((a,b)=>b.count-a.count)
+    .slice(0,keep);
+  // v0.99: сохраняем треугольники для наследования
+  echoS2=S2.map(t=>[...t]);
+  echoH2=[...H2];
+  echoReady=true;
+}
+
+// ================================================================
+// ПОЛЕ
+// ================================================================
+function updateField(LsRe,LAIm){
+  const nR=new Float64Array(N), nI=new Float64Array(N);
+  const gMin=.5, gMax=1.5;
+  let amax=0; for(let i=0;i<N;i++) if(alpha[i]>amax) amax=alpha[i];
+  const aScale=amax>0?amax:1;
+
+  for(let i=0;i<N;i++){
+    if(!alive[i]){ nR[i]=0; nI[i]=0; continue; }   // v1.6: надгробия не эволюционируют
+    const g=gMin+(gMax-gMin)*(alpha[i]/aScale);
+    let lR=0,lI=0,rR=0,rI=0;
+    for(let j=0;j<N;j++){
+      if(!alive[j]) continue;                       // v1.6: связи с надгробиями молчат
+      lR+=LsRe[i*N+j]*psiRe[j]-LAIm[i*N+j]*psiIm[j];
+      lI+=LsRe[i*N+j]*psiIm[j]+LAIm[i*N+j]*psiRe[j];
+      rR+=R[i*N+j]*psiRe[j];
+      rI+=R[i*N+j]*psiIm[j];
+    }
+    const n2=psiRe[i]**2+psiIm[i]**2, nl=NONLINEAR*(1-n2);
+    const gammaEff=GAMMA*(2.0-g);
+    // v1.6: НАСЫЩЕНИЕ петли R→ψ. Раньше член rR·.04 был линейным и при росте R
+    // раскручивал экспоненту ψ→R→ψ → Inf → NaN (корень бага ~94k шага).
+    // tanh ограничивает обратную связь: сильный резонанс больше НЕ уходит в разнос.
+    const fbR=LOOP_FB_SAT*Math.tanh(rR*LOOP_FB/LOOP_FB_SAT);
+    const fbI=LOOP_FB_SAT*Math.tanh(rI*LOOP_FB/LOOP_FB_SAT);
+    nR[i]=psiRe[i]+DT*g*(lI - gammaEff*psiRe[i]/g + nl*psiRe[i] + fbR);
+    nI[i]=psiIm[i]+DT*g*(-lR - gammaEff*psiIm[i]/g + nl*psiIm[i] + fbI);
+    // v1.3: собственная прецессия — узел крутит фазу со своей ω.
+    // это делает частоту настоящим свойством приёмника: узел резонирует
+    // на входной сигнал той полосы, что близка к его ω.
+    if(nodeOmega){
+      const dPh=nodeOmega[i]*OMEGA_PSI*DT;
+      const cs=Math.cos(dPh), sn=Math.sin(dPh);
+      const rr=nR[i]*cs - nI[i]*sn;
+      const ii=nR[i]*sn + nI[i]*cs;
+      nR[i]=rr; nI[i]=ii;
+    }
+    const nm=Math.sqrt(nR[i]**2+nI[i]**2);
+    if(nm>NORM_CLIP){nR[i]*=NORM_CLIP/nm;nI[i]*=NORM_CLIP/nm;}
+  }
+  psiRe.set(nR); psiIm.set(nI);
+}
+
+// ================================================================
+// ГЕОМЕТРИЯ — v1.1: двусторонняя связь поля и пространства
+// ================================================================
+function updateGeom(LsRe,LAIm){
+  // H накапливается от волнового перекрытия в реальном пространстве
+  // J-ток и A остаются как раньше
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+    const dr=psiRe[i]-psiRe[j], di=psiIm[i]-psiIm[j];
+    const K=dr*dr+di*di;
+    // геометрический вес: перекрытие волновых функций зависит от расстояния
+    const gw=W[i*N+j]; // уже пересчитан в buildL из расстояний
+    const Lre=LsRe[i*N+j], Lim=LAIm[i*N+j];
+    const Lpre=Lre*psiRe[j]-Lim*psiIm[j];
+    const Lpim=Lre*psiIm[j]+Lim*psiRe[j];
+    const J=psiRe[i]*Lpim-psiIm[i]*Lpre;
+    // v1.4a: H снова копится от ψ-разности НАПРЯМУ, без удушения геометрией.
+    // gw работает мягким вентилем: между связанными узлами (gw значим) H растёт
+    // полноценно; между совсем далёкими — приглушённо. это возвращает созревание
+    // узлов, которое в v1.4 заморозилось (узлы разъехались, gw умер, H не рос).
+    const gate=0.4+0.6*Math.min(1,gw/GEO_W_MIN/3);  // 0.4..1.0
+    let nH=H[i*N+j]+DT*(ALPHA_H*K*gate - GEO_H_DECAY*H[i*N+j]);
+    if(nH<0) nH=0;
+    if(nH>H_CLIP) nH=H_CLIP;
+    H[i*N+j]=nH;
+    if(i<j){
+      const nA=A[i*N+j]+DT*(-ETA_A*A[i*N+j]+.038*J);
+      A[i*N+j]=nA; A[j*N+i]=-nA;
+    }
+    if(i<j){
+      const ai=psiRe[i]**2+psiIm[i]**2;
+      const aj=psiRe[j]**2+psiIm[j]**2;
+      const dR=.07*(ai*aj*hEff(H[i*N+j])*gw)-.014*R[i*N+j];
+      let nR=R[i*N+j]+DT*dR;
+      // v1.6: жёсткий потолок R — второй конец стабилизации петли ψ→R→ψ.
+      if(nR>LOOP_R_CLIP) nR=LOOP_R_CLIP; else if(nR<-LOOP_R_CLIP) nR=-LOOP_R_CLIP;
+      R[i*N+j]=nR; R[j*N+i]=nR;
+    }
+  }
+
+  // ── v1.1: ψ двигает узлы в пространстве ──────────────────────
+  // узлы с большой ψ-разностью отталкиваются геометрически
+  // узлы с малой ψ-разностью (синхронные) притягиваются
+  // это замыкает петлю: геометрия → W → ψ → геометрия
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+    if(!vel[i]) vel[i]=[0,0,0];
+    if(!vel[j]) vel[j]=[0,0,0];
+    const gw=W[i*N+j]; if(gw<GEO_W_MIN) continue;
+    const dx=pos[i][0]-pos[j][0];
+    const dy=pos[i][1]-pos[j][1];
+    const dz=pos[i][2]-pos[j][2];
+    const r=Math.sqrt(dx*dx+dy*dy+dz*dz)+0.001;
+    // ψ-разность: большая → узлы расталкиваются; маленькая → стягиваются
+    const dpRe=psiRe[i]-psiRe[j], dpIm=psiIm[i]-psiIm[j];
+    const psiDiff=dpRe*dpRe+dpIm*dpIm;
+    // целевое расстояние: синхронные узлы хотят быть ближе
+    const rTarget=GEO_SIGMA*(0.4+0.6*psiDiff);
+    const f=GEO_PSI_FORCE*gw*(r-rTarget)/r;
+    vel[i][0]-=f*dx; vel[i][1]-=f*dy; vel[i][2]-=f*dz;
+    vel[j][0]+=f*dx; vel[j][1]+=f*dy; vel[j][2]+=f*dz;
+  }
+
+  // Pi и W-динамика: теперь W диктуется геометрией, Pi управляет
+  // только памятью о «желаемой» близости
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++){
+    const K=(psiRe[i]-psiRe[j])**2+(psiIm[i]-psiIm[j])**2;
+    const tgt=.42*Math.tanh(3*K)+.26*hEff(H[i*N+j]);
+    const dP=-ALPHA_PI*Pi[i*N+j]-ETA_W*(W[i*N+j]-tgt);
+    Pi[i*N+j]+=DT*dP; Pi[j*N+i]=Pi[i*N+j];
+  }
+
+  enforceMaxDegree();
+}
+
+function enforceMaxDegree(){
+  for(let i=0;i<N;i++){
+    const nbr=[];
+    for(let j=0;j<N;j++) if(i!==j && W[i*N+j]>DEATH_THR) nbr.push([j, W[i*N+j]]);
+    if(nbr.length<=MAX_DEGREE) continue;
+    nbr.sort((a,b)=>b[1]-a[1]);
+    for(let k=MAX_DEGREE;k<nbr.length;k++){
+      const j=nbr[k][0];
+      W[i*N+j]=0; W[j*N+i]=0;
+    }
+  }
+}
+const BIRTH_THR=.12;
+
+// ================================================================
+// T
+// ================================================================
+function applyT(x, modIdx){
+  // v1.6: СЕНСОРНАЯ ТОПОГРАФИЯ. Раньше любой вход бил во все узлы одинаково —
+  // кластеры не могли специализироваться (все «звук»). Теперь вход модальности
+  // m входит сильнее в узлы, чья частота nodeOmega соответствует её полосе:
+  // звук → низкочастотные узлы, свет → высокочастотные, символ → средние.
+  // Так разные модальности возбуждают разные ЗОНЫ графа → разделение труда.
+  const pR=new Float64Array(N), pI=new Float64Array(N);
+  // центр полосы модальности в пространстве omega
+  let bandC=null, bandW=0;
+  if(typeof modIdx==='number' && modIdx>=0 && modIdx<3){
+    const lo=BAND_SOUND[0], hi=BAND_LIGHT[1], span=hi-lo;
+    bandC = modIdx===0 ? lo+span*0.18      // звук — низ
+          : modIdx===1 ? lo+span*0.82      // свет — верх
+          :              lo+span*0.5;       // символ — середина
+    bandW = span*0.30;                       // ширина зоны чувствительности
+  }
+  for(let i=0;i<N;i++){
+    let r=0,im=0;
+    for(let d=0;d<D_IN;d++){r+=TRe[i*D_IN+d]*x[d];im+=TIm[i*D_IN+d]*x[d];}
+    if(bandC!==null){
+      // гауссова чувствительность по близости частоты узла к полосе модальности
+      const dz=(nodeOmega[i]-bandC)/bandW;
+      const gain=0.25+0.75*Math.exp(-dz*dz);   // зона: ~1.0, вне: ~0.25 (не глушим совсем)
+      r*=gain; im*=gain;
+    }
+    pR[i]=r; pI[i]=im;
+  }
+  return{pR,pI};
+}
+
+function learnT(x,wasRes){
+  const sign=wasRes?1:-.25;
+  const hV=new Float64Array(N);
+  for(let i=0;i<N;i++){let s=0;for(let j=0;j<N;j++)s+=hEff(H[i*N+j]);hV[i]=Math.min(s,6);}
+  let aMaxNow=0;
+  for(let i=0;i<N;i++) if(alpha[i]>aMaxNow) aMaxNow=alpha[i];
+  if(aMaxNow<1e-9) aMaxNow=1;
+  for(let i=0;i<N;i++){
+    const aRel=alpha[i]/aMaxNow;
+    const w=hV[i]*(0.5+aRel*ALPHA_LEARN_GAIN);
+    for(let d=0;d<D_IN;d++){
+      TRe[i*D_IN+d]+=sign*LR_T*w*x[d];
+      TIm[i*D_IN+d]+=sign*LR_T*w*x[d];
+    }
+  }
+  for(let i=0;i<N;i++){
+    let nm=1e-9;
+    for(let d=0;d<D_IN;d++) nm+=TRe[i*D_IN+d]**2+TIm[i*D_IN+d]**2;
+    nm=Math.sqrt(nm);
+    const sc=Math.min(1,.45/nm);
+    for(let d=0;d<D_IN;d++){TRe[i*D_IN+d]*=sc;TIm[i*D_IN+d]*=sc;}
+  }
+}
+
+// ================================================================
+// ПРОЗВОН
+// ================================================================
+function probe(x,label,word,modIdx,eGain){
+  if(dead) return {res:0,isR:false};
+  if(typeof eGain!=='number') eGain=ENERGY_BUTTON;
+  const base=new Float64Array(N);
+  for(let i=0;i<N;i++) base[i]=Math.sqrt(psiRe[i]**2+psiIm[i]**2);
+  const{pR,pI}=applyT(x, modIdx);
+
+  let aMaxNow=0;
+  for(let i=0;i<N;i++) if(alpha[i]>aMaxNow) aMaxNow=alpha[i];
+  if(aMaxNow<1e-9) aMaxNow=1;
+
+  let res=0, predErr=0;
+  for(let i=0;i<N;i++){
+    if(!alive[i]) continue;   // v1.6: надгробия не дают и не размывают резонанс
+    const tR=psiRe[i]+eps*pR[i], tI=psiIm[i]+eps*pI[i];
+    const nm=Math.sqrt(tR**2+tI**2);
+    let hs=0; for(let j=0;j<N;j++){ if(!alive[j])continue; hs+=hEff(H[i*N+j]); }
+    const d=Math.abs(nm-base[i]);
+    const aRel=alpha[i]/aMaxNow;
+    res+=d*(1+Math.min(hs,8)*.5)*(0.5+aRel*ALPHA_GAIN);
+    predErr+=d;
+  }
+  res/=Nalive;
+  predErr/=Nalive;
+
+  const isR=res>RESONANCE_THR;
+  const aEnt=entropy(alpha);
+  const focusNode=alphaArgmax();
+
+  if(isR){
+    for(let i=0;i<N;i++){
+      psiRe[i]+=eps*pR[i]; psiIm[i]+=eps*pI[i];
+      const nm=Math.sqrt(psiRe[i]**2+psiIm[i]**2);
+      if(nm>NORM_CLIP){psiRe[i]*=NORM_CLIP/nm;psiIm[i]*=NORM_CLIP/nm;}
+    }
+    energy=Math.min(100,energy+eGain);
+    eInAcc+=eGain;   // v1.6: учёт притока в бюджет
+    totalRes++;
+    flash();
+    const eStr = eGain>0 ? ' +'+eGain+'E' : '';
+    slog('✦ резонанс ['+label+'] r='+res.toFixed(3)+eStr,'le res');
+
+    if(typeof modIdx==='number' && modIdx>=0 && modIdx<3){
+      reinforceModality(focusNode, modIdx);
+    }
+
+    if(word){
+      const m=nodeMemory[focusNode];
+      m.set(word,(m.get(word)||0)+1);
+    } else if(typeof modIdx==='number' && modIdx>=0 && modIdx<3){
+      // ПАТЧ: кнопочные/фоновые зонды тоже оставляют след — имя модальности
+      // это позволяет эху переносить не только структуру, но и «опыт»
+      const m=nodeMemory[focusNode];
+      const key=':'+MODALITIES[modIdx];  // двоеточие чтобы отличать от обычных слов
+      m.set(key,(m.get(key)||0)+1);
+    }
+
+    let resMedian=0;
+    if(resonanceHistory.length>=10){
+      const sorted=[...resonanceHistory].sort((a,b)=>a-b);
+      resMedian=sorted[Math.floor(sorted.length/2)];
+    }
+    const answerThr=Math.max(resMedian*ANSWER_RES_MULT, 0.05);
+    // ПАТЧ: ответ возможен и без word — модальность работает как псевдо-якорь
+    // word для текста, иначе имя модальности (sound/image/symbol)
+    const triggerKey = word || (typeof modIdx==='number' && modIdx>=0 && modIdx<3 ? MODALITIES[modIdx] : null);
+    if(triggerKey && res>answerThr && aEnt<ANSWER_ENTROPY_MAX){
+      tryAnswer(focusNode, triggerKey);
+    }
+  } else {
+    slog('· '+label+' r='+res.toFixed(3),'le prb');
+  }
+
+  learnT(x,isR);
+  updateAlpha(predErr);
+  resonanceHistory.push(res);
+  if(resonanceHistory.length>ANSWER_HISTORY) resonanceHistory.shift();
+  return{res,isR};
+}
+
+function tryAnswer(focusNode, inputWord){
+  if(step-lastAnswerStep<40) return;  // 60→40: чуть свободнее
+  const m=nodeMemory[focusNode];
+  const cand=new Map();
+  for(let i=0;i<N;i++){
+    const w=(i===focusNode)?1.5 : (W[focusNode*N+i]>DEATH_THR ? W[focusNode*N+i]*5 : 0);
+    if(w<=0) continue;
+    for(const [word,c] of nodeMemory[i]){
+      if(word===inputWord) continue;
+      cand.set(word,(cand.get(word)||0)+c*w);
+    }
+  }
+
+  // ПАТЧ: молчание вместо мусора
+  // если в окрестности фокуса вообще нет ассоциативной памяти — не отвечать
+  // (символьный код имеет смысл только когда есть выбор формата, не как fallback)
+  if(cand.size===0) return;
+
+  const mode=totalAns%2;
+  let answer;
+  if(mode===0){
+    // слово из памяти — самое связанное
+    let best='',bv=-1;
+    for(const [w,v] of cand) if(v>bv){bv=v;best=w;}
+    answer=best;
+  } else {
+    // символьный код узла — но только если cand непустой
+    const ph=Math.atan2(psiIm[focusNode],psiRe[focusNode]);
+    let hSum=0; for(let j=0;j<N;j++) hSum+=hEff(H[focusNode*N+j]);
+    const phChar='∠'+(ph>=0?'+':'')+(ph/Math.PI).toFixed(2)+'π';
+    answer='⟨'+focusNode+' '+phChar+' h='+hSum.toFixed(1)+'⟩';
+  }
+
+  lastAnswer=answer;
+  lastAnswerStep=step;
+  totalAns++;
+  slog('→ '+answer,'le ans');
+}
+
+function flash(){
+  const el=document.getElementById('res-flash');
+  el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),150);
+}
+
+// ================================================================
+// v0.99: СИМПЛИЦИАЛЬНЫЙ СЛОЙ — треугольники
+// ================================================================
+
+// когерентная дистанция тройки — ψ-разность + геометрия
+function coherence3(i,j,k){
+  const dr1=psiRe[i]-psiRe[j], di1=psiIm[i]-psiIm[j];
+  const dr2=psiRe[j]-psiRe[k], di2=psiIm[j]-psiIm[k];
+  const dr3=psiRe[k]-psiRe[i], di3=psiIm[k]-psiIm[i];
+  const psiD=(Math.sqrt(dr1*dr1+di1*di1)+
+              Math.sqrt(dr2*dr2+di2*di2)+
+              Math.sqrt(dr3*dr3+di3*di3))/3;
+  // геометрический множитель: треугольник рождается если узлы реально близко
+  const gw=(W[i*N+j]+W[j*N+k]+W[k*N+i])/3;
+  return psiD*(1.0-gw*0.6); // близкие геометрически → ниже порог рождения
+}
+
+function triKey(a,b,c){
+  // канонический ключ: всегда i<j<k
+  const s=[a,b,c].sort((x,y)=>x-y);
+  return s[0]*65536+s[1]*256+s[2];
+}
+
+// быстрый Set для дедупликации
+let S2keys=new Set();
+
+function maybeBirthTriangles(attempts){
+  if(S2.length>=MAX_TRIANGLES) return;
+  let born=0;
+
+  // v1.2: относительный порог α — доля от текущего максимума
+  let aMax=0; for(let i=0;i<N;i++) if(alpha[i]>aMax) aMax=alpha[i];
+  if(aMax<1e-9) return;
+  const aThr=aMax*TRI_ALPHA_THR_REL;
+
+  // кандидаты: узлы с α выше относительного порога
+  const cands=[];
+  for(let i=0;i<N;i++){
+    if(alpha[i]<aThr) continue;
+    let wSum=0; for(let j=0;j<N;j++) wSum+=W[i*N+j];
+    cands.push({i, score: alpha[i]*wSum});
+  }
+  if(cands.length===0) return;
+  cands.sort((a,b)=>b.score-a.score);
+  const topN=Math.min(attempts*3, cands.length);
+
+  for(let ci=0;ci<topN;ci++){
+    if(S2.length>=MAX_TRIANGLES||born>=attempts) break;
+    const i=cands[ci].i;
+
+    // ближайшие соседи по W
+    const nbrs=[];
+    for(let j=0;j<N;j++){
+      if(j===i) continue;
+      if(W[i*N+j]>GEO_W_MIN) nbrs.push({j, w:W[i*N+j]});
+    }
+    if(nbrs.length<2) continue;
+    nbrs.sort((a,b)=>b.w-a.w);
+
+    const top=Math.min(8, nbrs.length);
+    for(let a=0;a<top&&born<attempts;a++){
+      for(let b=a+1;b<top&&born<attempts;b++){
+        const j=nbrs[a].j, k=nbrs[b].j;
+        // относительный порог для тройки
+        const aAvg=(alpha[i]+alpha[j]+alpha[k])/3;
+        if(aAvg<aThr*0.6) continue;
+        const coh=coherence3(i,j,k);
+        if(coh>TRI_BIRTH_THR) continue;
+        const key=triKey(i,j,k);
+        if(S2keys.has(key)) continue;
+        const ids=[i,j,k].sort((a,b)=>a-b);
+        S2.push(ids);
+        H2.push(0.05);
+        S2age.push(0);
+        S2keys.add(key);
+        born++;
+      }
+    }
+  }
+  if(born>0) slog('⧉ рождено '+born+' △','le brth');
+}
+
+function updateTriangles(){
+  for(let s=S2.length-1;s>=0;s--){
+    const [i,j,k]=S2[s];
+    // защита: узлы могли умереть при realloc
+    if(i>=N||j>=N||k>=N||!alive[i]||!alive[j]||!alive[k]){ S2.splice(s,1);H2.splice(s,1);S2age.splice(s,1);S2keys.delete(triKey(i,j,k));continue; }
+    const coh=coherence3(i,j,k);
+    H2[s]+=DT*(0.07*coh - TRI_DECAY*H2[s]);
+    if(H2[s]<0) H2[s]=0;
+    S2age[s]++;
+    // распад: старые или слабые
+    if(H2[s]<0.005||S2age[s]>2200){
+      S2keys.delete(triKey(i,j,k));
+      S2.splice(s,1);H2.splice(s,1);S2age.splice(s,1);
+    }
+  }
+}
+
+function trianglesBackreaction(){
+  // сильные треугольники подталкивают свои узлы к синхронизации
+  for(let s=0;s<S2.length;s++){
+    const [i,j,k]=S2[s];
+    if(i>=N||j>=N||k>=N) continue;
+    if(!alive[i]||!alive[j]||!alive[k]) continue;  // v1.6
+    const str=TRI_BACKREACTION*H2[s];
+    // тянем каждый узел к центру масс треугольника
+    const cRe=(psiRe[i]+psiRe[j]+psiRe[k])/3;
+    const cIm=(psiIm[i]+psiIm[j]+psiIm[k])/3;
+    psiRe[i]+=(cRe-psiRe[i])*str;  psiIm[i]+=(cIm-psiIm[i])*str;
+    psiRe[j]+=(cRe-psiRe[j])*str;  psiIm[j]+=(cIm-psiIm[j])*str;
+    psiRe[k]+=(cRe-psiRe[k])*str;  psiIm[k]+=(cIm-psiIm[k])*str;
+  }
+}
+
+// ================================================================
+// v0.97: ЭХО-ПЕТЛЯ
+// узлы с накопленной модальной памятью излучают слабый сигнал
+// своей доминирующей модальности обратно в собственную ψ
+// это даёт системе внутренний голос — она слышит саму себя
+// ================================================================
+let echoSelfResCount=0;  // счётчик самоиндуцированных резонансов
+
+function echoLoop(){
+  if(dead||sleeping) return;
+  if(N===0) return;
+
+  // нормировка α
+  let aMaxNow=0;
+  for(let i=0;i<N;i++) if(alpha[i]>aMaxNow) aMaxNow=alpha[i];
+  if(aMaxNow<1e-9) return;
+
+  // собираем кандидатов на излучение
+  // условие: α-rel > порога И в памяти есть модальные метки
+  const emitters=[];
+  for(let i=0;i<N;i++){
+    const aRel=alpha[i]/aMaxNow;
+    if(aRel<ECHO_LOOP_ALPHA_THR) continue;
+    // ищем доминирующую модальность по nodeMemory
+    const mem=nodeMemory[i];
+    if(mem.size===0) continue;
+    let bestMod=-1, bestC=0;
+    for(const [w,c] of mem){
+      // только модальные метки (с двоеточием)
+      if(w.length>1 && w.charCodeAt(0)===58){
+        const modName=w.slice(1);
+        const mi=MODALITIES.indexOf(modName);
+        if(mi>=0 && c>bestC){bestC=c;bestMod=mi;}
+      }
+    }
+    if(bestMod<0) continue;
+    // фактор усталости
+    const fatigueF=1-echoFatigue[i]*ECHO_LOOP_REFRACTORY;
+    if(fatigueF<.1) continue;
+    emitters.push({node:i, mod:bestMod, count:bestC, aRel:aRel, fatigueF:fatigueF});
+  }
+
+  if(emitters.length===0) return;
+
+  // сортируем по силе вклада и обрезаем по MAX_SELF
+  emitters.sort((a,b)=>(b.aRel*b.count*b.fatigueF)-(a.aRel*a.count*a.fatigueF));
+  const active=emitters.slice(0, ECHO_LOOP_MAX_SELF);
+
+  // декремент усталости у всех
+  for(let i=0;i<N;i++) echoFatigue[i]=Math.max(0, echoFatigue[i]-.02);
+
+  // эмитим
+  for(const em of active){
+    const i=em.node;
+    const sig=genSig(MODALITIES[em.mod]);
+    // прогнать через T узла i — получаем ψ-вклад
+    let r=0, im=0;
+    for(let d=0;d<D_IN;d++){
+      r+=TRe[i*D_IN+d]*sig[d];
+      im+=TIm[i*D_IN+d]*sig[d];
+    }
+    // сила: масштабируется α, насыщенностью памяти, усталостью
+    const conf=Math.min(1, em.count/10);
+    const amp=ECHO_LOOP_STRENGTH * em.aRel * conf * em.fatigueF;
+    // добавляем напрямую в ψ узла
+    psiRe[i]+=r*amp;
+    psiIm[i]+=im*amp;
+    // нормировка
+    const nm=Math.sqrt(psiRe[i]*psiRe[i]+psiIm[i]*psiIm[i]);
+    if(nm>NORM_CLIP){psiRe[i]*=NORM_CLIP/nm;psiIm[i]*=NORM_CLIP/nm;}
+    // повышаем усталость узла
+    echoFatigue[i]=Math.min(1, echoFatigue[i]+.18);
+  }
+
+  // проверка самоиндуцированного резонанса
+  // если суммарный вклад эхо был значительным — это шанс на +1E
+  // считаем только раз на цикл эхо-петли
+  if(active.length>=2 && energy<60){
+    // взвешенное среднее aRel у эмиттеров
+    let avgA=0; for(const em of active) avgA+=em.aRel;
+    avgA/=active.length;
+    if(avgA>0.4 && Math.random()<0.25){
+      energy=Math.min(100, energy+1);
+      echoSelfResCount++;
+      if(echoSelfResCount%5===0){
+        slog('◌ внутренний резонанс ('+active.length+' голосов) +1E','le res');
+      }
+    }
+  }
+}
+
+// ================================================================
+// ТЕКСТ → сигнал
+// ================================================================
+function textToSignal(txt){
+  const x=new Float64Array(D_IN);
+  const s=txt.trim().toLowerCase();
+  if(!s.length) return x;
+  for(let i=0;i<s.length;i++){
+    const c=s.charCodeAt(i);
+    const phase=(c/128)*2*Math.PI;
+    const pos_f=i/Math.max(1,s.length-1);
+    for(let d=0;d<D_IN;d++){
+      const w=Math.exp(-((d/D_IN-pos_f)**2)*D_IN*.5);
+      x[d]+=Math.sin(phase+d*.7)*w;
+      x[d]+=Math.cos(phase*1.3+d*.4)*w*.5;
+    }
+  }
+  let mx=0; for(let d=0;d<D_IN;d++) if(Math.abs(x[d])>mx) mx=Math.abs(x[d]);
+  if(mx>0) for(let d=0;d<D_IN;d++) x[d]/=mx;
+  return x;
+}
+
+// v1.3: физический генератор сигнала.
+// band: 'sound' (низкая полоса) | 'light' (высокая полоса)
+// side: 0..3 наклон фазы в одну из 4 сторон, -1 — без наклона
+function genSigPhys(band, side){
+  const x=new Float64Array(D_IN);
+  const range = band==='light' ? BAND_LIGHT : BAND_SOUND;
+  const w=range[0]+Math.random()*(range[1]-range[0]);
+  const omega=w*2*Math.PI*8;          // несущая частота полосы
+  const tilt = (typeof side==='number' && side>=0) ? side*Math.PI/2 : 0;
+  for(let d=0;d<D_IN;d++){
+    const u=d/D_IN;
+    x[d]=Math.sin(omega*u + tilt*u*4)*Math.pow(0.96,d);
+  }
+  let mx=0; for(let d=0;d<D_IN;d++) if(Math.abs(x[d])>mx) mx=Math.abs(x[d]);
+  if(mx>0) for(let d=0;d<D_IN;d++) x[d]/=mx;
+  return x;
+}
+
+// старый генератор оставлен — используется эхо-петлёй и сном (REM-сны).
+// для звука/света делегируем на физический genSigPhys; символ — случайная сторона.
+function genSig(t){
+  if(t==='sound')  return genSigPhys('sound', -1);
+  if(t==='image')  return genSigPhys('light', -1);
+  if(t==='symbol') return genSigPhys('sound', Math.floor(Math.random()*4));
+  const x=new Float64Array(D_IN);
+  return x;
+}
+
+// ================================================================
+// РОЖДЕНИЕ УЗЛА
+// ================================================================
+// ── v1.6: МОРФОГЕНЕЗ ────────────────────────────────────────────
+// Среда сама решает, СКОЛЬКО узлов и ГДЕ. Решение — от невязки рёбер
+// (где поле+память меняются резче, чем дискретизация может представить).
+// Порог адаптивный: медиана+K·MAD по живым рёбрам. Никаких MAX_NODES/родителей.
+
+function edgeResidual(i,j){
+  // невязка ребра: взвешенная сумма градиента ψ и разности памяти H
+  const dpsi=(psiRe[i]-psiRe[j])**2+(psiIm[i]-psiIm[j])**2;
+  const dH=Math.abs(hEff(H[i*N+j])-hEff(H[j*N+i])) + hEff(H[i*N+j]);
+  return MORPH_W_PSI*dpsi + MORPH_W_H*dH;
+}
+
+function residStats(){
+  // собираем невязки всех живых связанных рёбер, считаем медиану и MAD
+  const vals=[];
+  for(let i=0;i<N;i++){ if(!alive[i])continue;
+    for(let j=i+1;j<N;j++){ if(!alive[j])continue;
+      if(W[i*N+j]<GEO_W_MIN) continue;
+      vals.push(edgeResidual(i,j));
+    }
+  }
+  if(vals.length<3) return null;
+  vals.sort((a,b)=>a-b);
+  const med=vals[Math.floor(vals.length/2)];
+  const dev=vals.map(v=>Math.abs(v-med)).sort((a,b)=>a-b);
+  const mad=dev[Math.floor(dev.length/2)]||1e-6;
+  return {med, mad, n:vals.length};
+}
+
+function pickBirthSite(){
+  // ребро с максимальной невязкой среди живых связанных пар
+  let bi=-1,bj=-1,best=-Infinity;
+  for(let i=0;i<N;i++){ if(!alive[i])continue;
+    for(let j=i+1;j<N;j++){ if(!alive[j])continue;
+      if(W[i*N+j]<GEO_W_MIN) continue;
+      const r=edgeResidual(i,j);
+      if(r>best){best=r;bi=i;bj=j;}
+    }
+  }
+  return {i:bi, j:bj, resid:best};
+}
+
+function pickDissolveNode(){
+  // самый «гладкий и тихий» живой узел: минимальная локальная невязка + малая α,
+  // достаточно зрелый. Это узел, чью информацию соседи и так несут.
+  let best=-1, bestScore=Infinity;
+  for(let i=0;i<N;i++){
+    if(!alive[i]) continue;
+    if(nodeAge[i]<MORPH_MIN_AGE) continue;
+    if(alpha[i]>MORPH_ALPHA_QUIET) continue;
+    let local=0,deg=0;
+    for(let j=0;j<N;j++){ if(!alive[j]||j===i)continue;
+      if(W[i*N+j]<GEO_W_MIN) continue;
+      local+=edgeResidual(i,j); deg++;
+    }
+    if(deg===0){ // изолированный тихий узел — первый кандидат на растворение
+      if(0<bestScore){bestScore=0;best=i;} continue;
+    }
+    const score=local/deg;
+    if(score<bestScore){bestScore=score;best=i;}
+  }
+  return {node:best, score:bestScore};
+}
+
+// общая машинерия расширения массивов (из проверенного 1.5 tryBirthNode)
+function growNode(siteI, siteJ){
+  if(N>=HARD_CAP) return false;       // только аварийный предел, не закон
+  const nn=N+1;
+  const exp=(old,n)=>{
+    const a=new Float64Array(nn*nn);
+    for(let i=0;i<n;i++) for(let j=0;j<n;j++) a[i*nn+j]=old[i*n+j];
+    return a;
+  };
+  W=exp(W,N);Pi=exp(Pi,N);H=exp(H,N);A=exp(A,N);R=exp(R,N);
+
+  const nTR=new Float64Array(nn*D_IN), nTI=new Float64Array(nn*D_IN);
+  for(let i=0;i<N;i++) for(let d=0;d<D_IN;d++){
+    nTR[i*D_IN+d]=TRe[i*D_IN+d]; nTI[i*D_IN+d]=TIm[i*D_IN+d];
+  }
+  // T нового узла — среднее родительских концов ребра + мутация
+  for(let d=0;d<D_IN;d++){
+    nTR[N*D_IN+d]=.5*(TRe[siteI*D_IN+d]+TRe[siteJ*D_IN+d])+(Math.random()-.5)*.05;
+    nTI[N*D_IN+d]=.5*(TIm[siteI*D_IN+d]+TIm[siteJ*D_IN+d])+(Math.random()-.5)*.05;
+  }
+  TRe=nTR; TIm=nTI;
+
+  const nPR=new Float64Array(nn), nPI=new Float64Array(nn);
+  nPR.set(psiRe); nPI.set(psiIm);
+  nPR[N]=.5*(psiRe[siteI]+psiRe[siteJ]); nPI[N]=.5*(psiIm[siteI]+psiIm[siteJ]);
+  psiRe=nPR; psiIm=nPI;
+
+  const nAL=new Float64Array(nn);
+  for(let i=0;i<N;i++) nAL[i]=alphaLogit[i];
+  nAL[N]=.5*(alphaLogit[siteI]+alphaLogit[siteJ]);
+  alphaLogit=nAL;
+  alpha=new Float64Array(nn);
+
+  nodeMemory.push(new Map());
+  const newMP=new Float64Array(3);
+  for(let k=0;k<3;k++) newMP[k]=Math.max(0, .5*(modPref[siteI][k]+modPref[siteJ][k])+(Math.random()-.5)*.04);
+  modPref.push(newMP);
+
+  const newFat=new Float64Array(nn);
+  for(let i=0;i<N;i++) newFat[i]=echoFatigue[i];
+  newFat[N]=0;
+  echoFatigue=newFat;
+
+  const nOm=new Float64Array(nn);
+  for(let i=0;i<N;i++) nOm[i]=nodeOmega[i];
+  nOm[N]=.5*(nodeOmega[siteI]+nodeOmega[siteJ])+(Math.random()-.5)*0.05;
+  nodeOmega=nOm;
+
+  // v1.6: расширяем маску жизни и возраст
+  const nAlive=new Uint8Array(nn); nAlive.set(alive); nAlive[N]=1; alive=nAlive;
+  const nAge=new Float64Array(nn); nAge.set(nodeAge); nAge[N]=0; nodeAge=nAge;
+
+  // новый узел связан с обоими концами ребра, на котором родился
+  W[N*nn+siteI]=.045; W[siteI*nn+N]=.045;
+  W[N*nn+siteJ]=.045; W[siteJ*nn+N]=.045;
+  R[N*nn+N]=.05;
+
+  // КООРДИНАТА: середина «самого напряжённого ребра», спроецированная на сферу
+  const mx=.5*(pos[siteI][0]+pos[siteJ][0]);
+  const my=.5*(pos[siteI][1]+pos[siteJ][1]);
+  const mz=.5*(pos[siteI][2]+pos[siteJ][2]);
+  const rr=Math.sqrt(mx*mx+my*my+mz*mz)+1e-9;
+  const sc=PLANET_R/rr;                         // прижать к поверхности планеты
+  pos.push([mx*sc, my*sc, mz*sc]);
+  vel.push([0,0,0]);
+
+  N=nn; Nalive++;
+  slog('⊕ узел #'+(N-1)+' на ребре #'+siteI+'–#'+siteJ+' (среда: невязка)','le brth');
+  return true;
+}
+
+function dissolveNode(k){
+  if(Nalive<=MORPH_FLOOR) return false;
+  // размазать ψ и память узла в живых соседей пропорционально связи
+  let wsum=0;
+  for(let j=0;j<N;j++){ if(j===k||!alive[j])continue; if(W[k*N+j]<GEO_W_MIN)continue; wsum+=W[k*N+j]; }
+  if(wsum>0){
+    for(let j=0;j<N;j++){ if(j===k||!alive[j])continue; const w=W[k*N+j]; if(w<GEO_W_MIN)continue;
+      const frac=w/wsum;
+      psiRe[j]+=psiRe[k]*frac*.5; psiIm[j]+=psiIm[k]*frac*.5;
+    }
+  }
+  // обнулить строку/столбец узла во всех матрицах (надгробие молчит)
+  for(let j=0;j<N;j++){
+    W[k*N+j]=0;W[j*N+k]=0; Pi[k*N+j]=0;Pi[j*N+k]=0;
+    H[k*N+j]=0;H[j*N+k]=0; A[k*N+j]=0;A[j*N+k]=0; R[k*N+j]=0;R[j*N+k]=0;
+  }
+  psiRe[k]=0; psiIm[k]=0; alpha[k]=0; alphaLogit[k]=-9;
+  alive[k]=0; Nalive--;
+  // выкинуть треугольники, ссылающиеся на растворённый узел
+  for(let s=S2.length-1;s>=0;s--){
+    if(S2[s][0]===k||S2[s][1]===k||S2[s][2]===k){
+      S2keys.delete(triKey(S2[s][0],S2[s][1],S2[s][2]));
+      S2.splice(s,1);H2.splice(s,1);S2age.splice(s,1);
+    }
+  }
+  slog('⊖ узел #'+k+' растворён в соседей (среда: гладко)','le dth');
+  return true;
+}
+
+// v1.6: эйлерова характеристика триангуляции живого графа: χ = V − E + F.
+// V — живые узлы, E — живые рёбра (W выше порога отрисовки), F — живые треугольники.
+// Замкнутая оболочка-сфера ⇒ χ=2. Открытый лист ⇒ χ≈1. Это «датчик замыкания».
+function eulerChar(){
+  let V=0;
+  for(let i=0;i<N;i++) if(alive[i]) V++;
+  let E=0;
+  for(let i=0;i<N;i++){ if(!alive[i])continue; for(let j=i+1;j<N;j++){ if(!alive[j])continue;
+    if(W[i*N+j]>GEO_W_MIN*2) E++;   // тот же порог, что у отрисовки рёбер
+  }}
+  let F=0;
+  for(let s=0;s<S2.length;s++){
+    const [i,j,k]=S2[s];
+    if(i>=N||j>=N||k>=N) continue;
+    if(!alive[i]||!alive[j]||!alive[k]) continue;
+    if(H2[s]>0.015) F++;
+  }
+  return {chi:V-E+F, V, E, F};
+}
+
+// v1.6: БЮДЖЕТНОЕ растворение. Единственный устойчивый сигнал в системе —
+// глобальный энергобаланс (локальные мерцают). Если за окно приток не покрыл
+// drain, организм сбрасывает один узел из хвоста α: «нас слишком много на эту
+// энергию». Голод форсирует ужимание раньше смерти → гомеостаз N по метаболизму.
+function budgetDissolveCheck(){
+  budgetClock++;
+  if(budgetClock<BUDGET_WINDOW) return;
+  const balance = eInAcc - eOutAcc;     // приток минус расход за окно
+  budgetBalance = balance;              // v1.6: запомнить для гейта роста (рождение в долг запрещено)
+  // сброс окна
+  eInAcc=0; eOutAcc=0; budgetClock=0;
+  if(balance>=BUDGET_DEFICIT) return;   // баланс сходится — никого не трогаем
+  if(Nalive<=MORPH_FLOOR) return;       // ниже пола не опускаемся
+  // кандидат: наименее задействованный сейчас (нижняя доля α), без претензии «заслужил»
+  const av=[];
+  for(let i=0;i<N;i++) if(alive[i]) av.push({i,a:alpha[i]});
+  if(av.length<4) return;
+  av.sort((x,y)=>x.a-y.a);
+  const pool=av.slice(0, Math.max(1, Math.floor(av.length*BUDGET_TAIL_FRAC)));
+  // из хвоста берём узел с наименьшей суммарной памятью — наименее «вросший»
+  let worst=pool[0].i, wH=Infinity;
+  for(const {i} of pool){
+    let hs=0; for(let j=0;j<N;j++){ if(!alive[j])continue; hs+=hEff(H[i*N+j]); }
+    if(hs<wH){ wH=hs; worst=i; }
+  }
+  dissolveNode(worst);
+  slog('⊖ бюджет: дефицит '+balance.toFixed(1)+'E/окно → сброшен #'+worst,'le dth');
+}
+
+// единый пересмотр топологии средой: вызывается из главного цикла
+function morphStep(){
+  // старим живые узлы
+  for(let i=0;i<N;i++) if(alive[i]) nodeAge[i]++;
+  // v1.6: РОЖДЕНИЕ В ДОЛГ ЗАПРЕЩЕНО. Если метаболизм не сводится (баланс окна
+  // в дефиците), рост замирает — нельзя отращивать узлы, которые не прокормить.
+  // Стартовый грейс: пока первое окно не замерено (budgetClock<window и баланс 0),
+  // даём расти, чтобы организм встал на ноги.
+  const startupGrace = (step<BUDGET_WINDOW);
+  if(!startupGrace && budgetBalance<BUDGET_DEFICIT) return;  // голодаем → не растём
+  const st=residStats();
+  if(!st) return;
+  const birthThr = st.med + MORPH_BIRTH_K*st.mad;
+  // v1.6: число рождений за вызов задаёт ползунок «рост N» (GROW_STAGES[growStage]).
+  // min гарантирован (если нижняя граница >0 и есть напряжённое ребро), до max.
+  const [gMin,gMax]=GROW_STAGES[growStage];
+  const want = gMin + Math.floor(Math.random()*(gMax-gMin+1));
+  let born=0;
+  for(let b=0; b<want; b++){
+    const site=pickBirthSite();
+    if(site.i<0) break;
+    // ниже минимума рождаем даже без превышения порога (нижняя граница = «хотя бы столько»),
+    // сверх минимума — только если ребро реально напряжено (среда решает)
+    if(b<gMin || site.resid>birthThr){
+      if(growNode(site.i, site.j)) born++;
+      else break;
+    } else break;
+  }
+}
+
+
+// ================================================================
+// СОН + РЕФЛЕКСИЯ
+// ================================================================
+async function sleepCycle(){
+  if(sleeping||dead) return;
+  sleeping=true;
+  healthCheck();  // v0.98: перед сном — чтобы не консолидировать NaN
+  const ov=document.getElementById('sleep-overlay');
+  const tx=document.getElementById('sleep-txt');
+  ov.classList.add('on'); tx.classList.add('on');
+
+  const aEnt=entropy(alpha);
+  let weakLinks=0, totalLinks=0;
+  for(let i=0;i<N;i++) for(let j=i+1;j<N;j++) if(W[i*N+j]>DEATH_THR){
+    totalLinks++;
+    if(W[i*N+j]<DEATH_THR*4) weakLinks++;
+  }
+  const weakRatio=totalLinks>0?weakLinks/totalLinks:0;
+  let hAvg=0;
+  for(let i=0;i<N*N;i++) hAvg+=hEff(H[i]);
+  hAvg/=(N*N);
+
+  let sleepKind;
+  if(aEnt>.7 && weakRatio>.4) sleepKind='deep';
+  else if(aEnt<.4 && hAvg>.3) sleepKind='rem';
+  else sleepKind='light';
+  lastSleepKind=sleepKind;
+
+  const kindRu={deep:'глубокий сон',rem:'быстрый сон',light:'лёгкий сон'}[sleepKind];
+  slog('━━ '+kindRu+' ━━','le slp');
+
+  const beforeN=N;
+  let beforeEdges=0;
+  for(let i=0;i<N*N;i++) if(W[i]>DEATH_THR) beforeEdges++;
+  beforeEdges=Math.floor(beforeEdges/2);
+  const wordsBefore=new Map();
+  for(const m of nodeMemory) for(const [w,c] of m) wordsBefore.set(w,(wordsBefore.get(w)||0)+c);
+
+  const wait=ms=>new Promise(r=>setTimeout(r,ms));
+
+  tx.textContent=kindRu+'...';
+  await wait(500);
+
+  let died=0;
+  const pruneFactor = sleepKind==='deep' ? .2 : sleepKind==='rem' ? .6 : .4;
+  const pruneRange  = sleepKind==='deep' ? 6  : sleepKind==='rem' ? 2  : 4;
+  for(let i=0;i<N*N;i++){
+    if(W[i]>0&&W[i]<DEATH_THR*pruneRange){
+      W[i]*=pruneFactor;
+      if(W[i]<DEATH_THR){W[i]=0;died++;}
+    }
+  }
+  slog('  обрезка: −'+Math.floor(died/2)+' связей','le slp');
+
+  if(sleepKind!=='rem'){
+    tx.textContent='консолидация H...';
+    await wait(500);
+    const nH=new Float64Array(N*N);
+    const mix = sleepKind==='deep' ? .4 : .28;
+    for(let i=0;i<N;i++) for(let j=0;j<N;j++){
+      let s=0,c=0;
+      for(let k=0;k<N;k++) if(W[i*N+k]>DEATH_THR){s+=H[k*N+j];c++;}
+      nH[i*N+j]=c>0?(1-mix)*H[i*N+j]+mix*(s/c):.88*H[i*N+j];
+    }
+    H.set(nH);
+  }
+
+  if(sleepKind==='rem'){
+    tx.textContent='сновидения...';
+    await wait(500);
+    for(let r=0;r<5;r++){
+      const x=genSig(MODALITIES[Math.floor(Math.random()*3)]);
+      const{pR,pI}=applyT(x);
+      for(let i=0;i<N;i++){
+        alphaLogit[i]+=(Math.random()-.5)*.3;
+      }
+      for(let i=0;i<N;i++){
+        psiRe[i]+=pR[i]*.02*(Math.random()-.5);
+        psiIm[i]+=pI[i]*.02*(Math.random()-.5);
+      }
+    }
+    slog('  · сновидения проявились','le slp');
+  }
+
+  tx.textContent='оптимизация T...';
+  await wait(500);
+  // v0.98: безопасная оптимизация T — clamped factor + нормировка каждую итерацию
+  // старый код: (1+LR_T*0.4*hV[i])^itN при hV=8, itN=40 → ×7.5 → NaN в Float32
+  const hV=new Float64Array(N);
+  for(let i=0;i<N;i++){let s=0;for(let j=0;j<N;j++)s+=hEff(H[i*N+j]);hV[i]=Math.min(s,6);}
+  const itN = sleepKind==='deep' ? 20 : sleepKind==='rem' ? 8 : 14;
+  for(let it=0;it<itN;it++){
+    for(let i=0;i<N;i++){
+      // фактор: жёстко ограничен, чтобы за itN итераций суммарный рост ≤ ×1.5
+      const factor=Math.min(1+LR_T*0.28*hV[i], 1.022);
+      for(let d=0;d<D_IN;d++){
+        TRe[i*D_IN+d]*=factor;
+        TIm[i*D_IN+d]*=factor;
+        // поэлементный hard-cap — защита от единичного выброса
+        if(TRe[i*D_IN+d]>0.8) TRe[i*D_IN+d]=0.8;
+        else if(TRe[i*D_IN+d]<-0.8) TRe[i*D_IN+d]=-0.8;
+        if(TIm[i*D_IN+d]>0.8) TIm[i*D_IN+d]=0.8;
+        else if(TIm[i*D_IN+d]<-0.8) TIm[i*D_IN+d]=-0.8;
+      }
+    }
+    // нормировка после каждой итерации — не только в конце
+    for(let i=0;i<N;i++){
+      let nm=1e-9;
+      for(let d=0;d<D_IN;d++) nm+=TRe[i*D_IN+d]**2+TIm[i*D_IN+d]**2;
+      nm=Math.sqrt(nm);
+      if(nm>0.45){
+        const sc=0.45/nm;
+        for(let d=0;d<D_IN;d++){TRe[i*D_IN+d]*=sc;TIm[i*D_IN+d]*=sc;}
+      }
+    }
+  }
+
+  for(let i=0;i<N;i++){
+    alphaLogit[i]=alphaLogit[i]*.5+(Math.random()-.5)*.05;
+  }
+
+  let prunedWords=0;
+  const wordThr = sleepKind==='deep' ? 3 : 2;
+  const wordProb = sleepKind==='deep' ? .9 : sleepKind==='rem' ? .4 : .7;
+  for(const m of nodeMemory){
+    for(const [w,c] of [...m]){
+      if(c<wordThr && Math.random()<wordProb){m.delete(w);prunedWords++;}
+    }
+  }
+
+  tx.textContent='морфогенез (сон)...';
+  await wait(500);
+  let born=0;
+  // v1.6: во сне среда активнее пересматривает топологию (рождение+растворение),
+  // но по-прежнему только если есть энергия — голодный организм не растёт.
+  const baseBirthAttempts = sleepKind==='rem' ? 6 : sleepKind==='deep' ? 2 : 4;
+  let morphPasses;
+  if(energy>70) morphPasses = baseBirthAttempts;
+  else if(energy>40) morphPasses = Math.max(1, Math.floor(baseBirthAttempts*0.6));
+  else if(energy>20) morphPasses = Math.max(1, Math.floor(baseBirthAttempts*0.3));
+  else morphPasses = 0;  // голодная не перестраивается
+  const aliveBefore=Nalive;
+  for(let a=0;a<morphPasses;a++) morphStep();
+  born=Math.max(0,Nalive-aliveBefore);
+
+  // v0.99: рождение треугольников во сне — активнее чем в тике
+  if(energy>20){
+    const triAttempts=sleepKind==='rem'?12:sleepKind==='deep'?6:9;
+    maybeBirthTriangles(triAttempts);
+  }
+
+  // ПАТЧ v0.95: стоимость сна = базовая + рождения − возврат за обрезку
+  // обрезка экономит будущий drain, организму это окупается сейчас
+  const eBase = sleepKind==='deep' ? 15 : sleepKind==='rem' ? 8 : 5;
+  const eBirthCost = born * 2;
+  const prunedEdges = Math.floor(died/2);
+  const eRefund = prunedEdges * 0.05;  // возврат за полезную работу
+  const eTotal = Math.max(0, eBase + eBirthCost - eRefund);
+  energy = Math.max(0, energy - eTotal);
+  const refundStr = eRefund>=0.5 ? ' − '+eRefund.toFixed(1)+'E возврат' : '';
+  slog('  стоимость сна: −'+eTotal.toFixed(1)+'E (база '+eBase+' + '+eBirthCost+refundStr+')','le slp');
+  await wait(400);
+
+  let afterEdges=0;
+  for(let i=0;i<N*N;i++) if(W[i]>DEATH_THR) afterEdges++;
+  afterEdges=Math.floor(afterEdges/2);
+  const wordsAfter=new Map();
+  for(const m of nodeMemory) for(const [w,c] of m) wordsAfter.set(w,(wordsAfter.get(w)||0)+c);
+  let topWord='', topC=0;
+  for(const [w,c] of wordsAfter) if(c>topC){topC=c;topWord=w;}
+
+  const dN=N-beforeN, dE=afterEdges-beforeEdges;
+  const parts=[kindRu];
+  if(dN>0) parts.push('+'+dN+' узлов');
+  if(dE!==0) parts.push((dE>0?'+':'')+dE+' связей');
+  if(prunedWords>0) parts.push('забыто '+prunedWords);
+  parts.push('−'+eTotal.toFixed(1)+'E');
+  if(topWord) parts.push('держится "'+topWord+'"×'+topC);
+  const refl=parts.join(' · ');
+  setReflection(refl, false);
+  slog('☽ '+refl,'le slp');
+
+  ov.classList.remove('on'); tx.classList.remove('on');
+  sleeping=false;
+  sleepTimer=1400+Math.floor(Math.random()*400);
+  slog('━━ пробуждение ━━','le slp');
+}
+
+// ================================================================
+// ЦИРКАДНЫЙ
+// ================================================================
+function updateCircadian(){
+  // ── СОЛНЦЕ: суточное вращение Земли → высота над горизонтом ──
+  const thSun = (step % DAY_LEN) / DAY_LEN * 2*Math.PI;
+  circAngle = thSun;
+  sunAlt  = Math.sin(thSun) * (1 - SUN_TILT);     // -1..1, 1 = зенит
+  sunLight = Math.max(0, sunAlt);                 // фон от Солнца 0..1
+  sunDir = [Math.cos(thSun), Math.sin(thSun)];    // направление на Солнце (для неба)
+
+  // ── БАРИЦЕНТР Земля–Луна: радиус орбиты ∝ массе ПАРТНЁРА ──
+  const thMoon = step / MOON_PERIOD * 2*Math.PI;  // сидерический ход Луны
+  const Mtot = M_EARTH + M_MOON;
+  const rEarth = BARY_A * (M_MOON  / Mtot);       // тяжёлая Земля — крошечная орбита
+  const rMoon  = BARY_A * (M_EARTH / Mtot);       // лёгкая Луна — большая орбита
+  earthXY = [ rEarth*Math.cos(thMoon),        rEarth*Math.sin(thMoon) ];
+  moonXY  = [ rMoon *Math.cos(thMoon+Math.PI), rMoon *Math.sin(thMoon+Math.PI) ];
+
+  // ── ФАЗА ЛУНЫ: элонгация Солнце–Земля–Луна ──
+  // вектор Земля→Луна и направление на Солнце; освещённая доля = (1-cosθ)/2
+  const e2m = [ moonXY[0]-earthXY[0], moonXY[1]-earthXY[1] ];
+  const lm = Math.hypot(e2m[0],e2m[1]) || 1e-9;
+  const cosElong = (e2m[0]*sunDir[0]+e2m[1]*sunDir[1]) / lm;
+  moonPhase = (1 - cosElong) / 2;                 // 0 новолуние … 1 полнолуние
+
+  // высота Луны над горизонтом: сдвинута относительно Солнца на её угловое
+  // положение в небе (биение суточного и лунного хода → синодический месяц)
+  const thMoonSky = thSun - thMoon;               // Луна отстаёт от Солнца
+  moonAlt = Math.sin(thMoonSky) * (1 - SUN_TILT);
+  // лунный свет — только когда Солнце под горизонтом
+  moonLight = (sunAlt < 0)
+    ? MOON_ALBEDO * Math.max(0, moonAlt) * moonPhase
+    : 0;
+
+  dayLight = Math.max(sunLight, moonLight);
+
+  // ── ФАЗЫ-ЯРЛЫКИ из высоты Солнца ──
+  if(sunAlt > 0.25)               circPhase='день';
+  else if(sunAlt > -0.10){                          // у горизонта
+    circPhase = (Math.cos(thSun) > 0) ? 'рассвет' : 'закат'; // высота растёт/падает
+  }
+  else                            circPhase='ночь';
+
+  if(!sleeping){
+    // фоновый зонд: частота и сила растут с освещённостью.
+    // днём — солнечный фон, ночью — слабый лунный (отражённый) фон.
+    if(dayLight > 0.04){
+      const period = Math.round(520 / Math.max(0.15, dayLight)); // светлее → чаще
+      if(step % Math.max(60, period) === 0){
+        const mod=chooseModalityByAlpha();
+        const modIdx=MODALITIES.indexOf(mod);
+        const eGain = ENERGY_BG * (moonLight>sunLight ? MOON_ALBEDO : 1);
+        const src = (moonLight>sunLight) ? 'луна·' : 'фон·';
+        probe(genSig(mod), src+mod, null, modIdx, eGain);
+      }
+    }
+    if(energy<20&&step%80===0) probe(genSig('sound'),'голод·зонд', null, 0, ENERGY_BG);
+    sleepTimer--;
+    if(sleepTimer<=0&&(circPhase==='ночь'||circPhase==='закат')&&!sleeping) sleepCycle();
+  }
+  if(step%25===0){
+    // ПАТЧ v0.95: drain считается по ЗРЕЛЫМ узлам (hEff>0.3)
+    // молодой граф не дорог в обслуживании — у организма есть «детство»
+    // только узлы которые накопили опыт стоят метаболически
+    let matureN=0;
+    for(let i=0;i<N;i++){
+      if(!alive[i]) continue;                       // v1.6: надгробия не стоят ресурса
+      let hs=0; for(let j=0;j<N;j++){ if(!alive[j])continue; hs+=hEff(H[i*N+j]); }
+      if(hs>0.3) matureN++;
+    }
+    // v1.6: ЭМЕРДЖЕНТНЫЙ ПОТОЛОК N. drain растёт как sqrt(зрелых живых) — чем
+    // больше узлов отрастила среда, тем дороже их содержать. Рост идёт, пока
+    // выгода (резонансы→энергия) перевешивает цену. Потолок ставит среда, не MAX_NODES.
+    const effN=Math.max(8, matureN);
+    const drain = Math.max(ENERGY_DRAIN_MIN, ENERGY_DRAIN_BASE*Math.sqrt(effN));
+    // v1.6: в режиме капсида обычный drain приостановлен — метаболизм целиком
+    energy=Math.max(0,energy-drain); eOutAcc+=drain;  // v1.6: учёт расхода в бюджет
+  }
+
+  // v1.6: смерть честная — только голод. Капсид теперь не предсмертный режим,
+  // а форма покоя свободной мембраны, поэтому отдельной инкапсуляции нет.
+  if(energy<=HUNGER_DEATH && !dead){
+    dead=true;
+    const lived=step>=OLD_AGE_HINT;          // прожил долго → богатое эхо
+    captureEcho(lived);
+    const wordStr=echoWords.length>0
+      ? ' · след: '+echoWords.slice(0,3).map(w=>'"'+w.word+'"').join(' ')
+      : '';
+    const msg = lived
+      ? 'прожита долгая жизнь. опыт передан дальше.'+wordStr
+      : 'энергия иссякла. эхо ждёт следующей жизни.'+wordStr;
+    setReflection(msg, false);
+    slog('☠ смерть от голода'+(lived?' · богатое эхо':'')+' ('+echoWords.length+' слов)','le dth');
+  }
+}
+
+// ================================================================
+// ОТРИСОВКА ГРАФА
+// ================================================================
+const gc=document.getElementById('gc');
+const gctx=gc.getContext('2d');
+let gcReady=false;   // v1.6: стал ли canvas валидного размера (защита от спирали)
+let showMinimap=true; // v1.6: мини-карта всего ростка в углу
+
+function resizeGC(){
+  const gp=document.getElementById('graph-wrap');
+  // v1.6: защита от нулевых размеров. Если панель ещё не разложена (старт,
+  // поворот, медленная загрузка), clientWidth=0 → деление на ~0 в проекции
+  // размазывало граф в спираль. Берём запасной размер и помечаем «не готов».
+  const w=gp.clientWidth, h=gp.clientHeight;
+  gcReady = (w>20 && h>20);
+  const W=gcReady?w:320, H=gcReady?h:240;
+  gc.width=W*window.devicePixelRatio;
+  gc.height=H*window.devicePixelRatio;
+  gc.style.width=W+'px';
+  gc.style.height=H+'px';
+  gctx.setTransform(1,0,0,1,0,0);
+  gctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+}
+
+// ================================================================
+// 3D РЕНДЕР — вращение, проекция, z-сортировка
+// ================================================================
+let rotX=0.62, rotY=0.22;   // углы обзора (v1.5: больше наклон — видим землю под ростком)
+let autoRotSpeed=0.0025;
+let dragActive=false, dragLast=[0,0];
+
+let camTarget=[0,0,0];  // v1.5: точка, на которую смотрит камера (центроид ростка)
+const CAM_DIST=9;        // v1.5: дистанция камеры от ростка. росток (радиус ~1)
+                         // занимает ~треть кадра, вокруг видна земля.
+function project(x,y,z, W_, H_){
+  // v1.5: камера центрирована на ростке, а не на центре планеты
+  x-=camTarget[0]; y-=camTarget[1]; z-=camTarget[2];
+  // вращение вокруг Y затем X
+  const cy=Math.cos(rotY), sy=Math.sin(rotY);
+  const cx=Math.cos(rotX), sx=Math.sin(rotX);
+  const x1=x*cy+z*sy;
+  const z1=-x*sy+z*cy;
+  const y2=y*cx-z1*sx;
+  const z2=y*sx+z1*cx;
+  // перспективная проекция: камера отодвинута на CAM_DIST вдоль взгляда
+  const fov=2.8;
+  const depth=fov+z2+CAM_DIST;       // было +1.5 (камера почти в ростке)
+  const sc=fov/Math.max(0.2, depth);
+  return {
+    sx: W_/2 + x1*sc*Math.min(W_,H_)*1.6,  // компенсируем дальность увеличением
+    sy: H_/2 + y2*sc*Math.min(W_,H_)*1.6,
+    sz: z2,
+    sc: sc
+  };
+}
+
+// ── v1.6: АНАЛИЗ КЛАСТЕРОВ (изучение колониального режима) ──────
+// Находим связные компоненты по сильным рёбрам и определяем доминирующую
+// модальность каждого. Отвечает на вопрос: специализируются ли кластеры
+// (разделение труда) или это клоны (фрагментация без функции).
+const MOD_RU=['звук','свет','символ'];
+const MOD_HUE=[185, 310, 45];   // звук=циан, свет=маджента, символ=янтарь
+let colorByMod=false;           // переключатель подсветки узлов по модальности
+// v1.6: карта узел→модальность кластера (для засечек на шкале α). Обновляется
+// периодически (анализ кластеров дорог — O(N²) BFS). analyzeFlash — таймер
+// вспышки засечек после кнопки «анализ».
+let nodeClusterMod=null;        // Int8Array(N): -1 нет кластера, иначе 0/1/2 модальность
+let clusterMapStep=-1;          // когда последний раз считали карту
+let analyzeFlash=0;             // кадры оставшейся вспышки засечек
+
+function analyzeClusters(){
+  const comp=new Int32Array(N).fill(-1);
+  let nc=0;
+  for(let s=0;s<N;s++){
+    if(!alive[s]||comp[s]>=0) continue;
+    const stack=[s]; comp[s]=nc;
+    while(stack.length){
+      const u=stack.pop();
+      for(let v=0;v<N;v++){
+        if(!alive[v]||comp[v]>=0) continue;
+        if(W[u*N+v]>GEO_W_MIN*2){ comp[v]=nc; stack.push(v); }
+      }
+    }
+    nc++;
+  }
+  const clusters=[];
+  for(let c=0;c<nc;c++){
+    const members=[];
+    for(let i=0;i<N;i++) if(alive[i]&&comp[i]===c) members.push(i);
+    if(members.length<2) continue;
+    const mp=[0,0,0];
+    const words=new Map();
+    for(const i of members){
+      for(let k=0;k<3;k++) mp[k]+=Math.max(0, modPref[i][k]);  // клип: доли не бывают отрицательными
+      const m=nodeMemory[i];
+      if(m) for(const [w,ct] of m){ if(w.startsWith(':')) continue; words.set(w,(words.get(w)||0)+ct); }
+    }
+    let dom=0; for(let k=1;k<3;k++) if(mp[k]>mp[dom]) dom=k;
+    const total=mp[0]+mp[1]+mp[2]+1e-9;
+    const purity=mp[dom]/total;
+    let topW='', topC=0;
+    for(const [w,ct] of words) if(ct>topC){topC=ct;topW=w;}
+    clusters.push({members, dom, purity, mp, topW, topC, size:members.length});
+  }
+  clusters.sort((a,b)=>b.size-a.size);
+  return clusters;
+}
+
+// v1.6: построить карту узел→модальность кластера для засечек на шкале.
+// Кэшируется: пересчёт не чаще раза в ~60 кадров (BFS дорог).
+function refreshClusterMap(){
+  if(!nodeClusterMod || nodeClusterMod.length!==N) nodeClusterMod=new Int8Array(N);
+  nodeClusterMod.fill(-1);
+  const cl=analyzeClusters();
+  for(const c of cl) for(const i of c.members) nodeClusterMod[i]=c.dom;
+  clusterMapStep=step;
+}
+
+function reportClusters(){
+  const cl=analyzeClusters();
+  if(cl.length===0){ slog('анализ: нет выраженных кластеров (одно тело?)','le'); return; }
+  const doms=new Set(cl.slice(0,6).map(c=>c.dom));
+  const verdict = doms.size>=2 ? 'РАЗДЕЛЕНИЕ ТРУДА — модальности различаются'
+                               : 'клоны (все к «'+MOD_RU[[...doms][0]]+'») — фрагментация без специализации';
+  slog('═ '+cl.length+' кластеров · '+verdict,'le brth');
+  for(let i=0;i<Math.min(6,cl.length);i++){
+    const c=cl[i];
+    const w = c.topW ? ' · "'+c.topW+'"×'+c.topC : '';
+    slog('  '+String.fromCharCode(65+i)+': '+MOD_RU[c.dom]+
+         ' ('+c.size+' уз, '+(c.purity*100|0)+'%)'+w,'le');
+  }
+}
+
+function drawGraph(){
+  const W_=gc.width/window.devicePixelRatio;
+  const H_=gc.height/window.devicePixelRatio;
+  const ctx=gctx;
+  ctx.clearRect(0,0,W_,H_);
+
+  // v1.7: атмосферный световой фон по высоте Солнца/Луны.
+  // день — тёплая дымка к зениту, ночь — холодная синь, луна слегка серебрит.
+  {
+    if(sunAlt > -0.10){          // день/сумерки — тёплый
+      const warm = Math.max(0, sunAlt);
+      ctx.fillStyle = 'rgba('+Math.round(40+warm*40)+','+Math.round(30+warm*35)+','+Math.round(50+warm*20)+','+(0.04+warm*0.10).toFixed(3)+')';
+      ctx.fillRect(0,0,W_,H_);
+    } else {                     // ночь — холодная синь + лунное серебро
+      ctx.fillStyle = 'rgba(8,12,30,'+(0.10 + (1-Math.max(0,sunAlt+0.10))*0.06).toFixed(3)+')';
+      ctx.fillRect(0,0,W_,H_);
+      if(moonLight>0){
+        ctx.fillStyle = 'rgba(150,170,210,'+(moonLight*0.5).toFixed(3)+')';
+        ctx.fillRect(0,0,W_,H_);
+      }
+    }
+  }
+
+  if(N===0) return;
+
+  // авторотация
+  if(!dragActive) rotY+=autoRotSpeed;
+
+  // v1.5: камера следит за центроидом ростка
+  let tcx=0,tcy=0,tcz=0;
+  for(let i=0;i<N;i++){ tcx+=pos[i][0]; tcy+=pos[i][1]; tcz+=pos[i][2]; }
+  tcx/=N; tcy/=N; tcz/=N;
+  // плавное слежение, чтобы камера не дёргалась
+  camTarget[0]+=(tcx-camTarget[0])*0.1;
+  camTarget[1]+=(tcy-camTarget[1])*0.1;
+  camTarget[2]+=(tcz-camTarget[2])*0.1;
+
+  // ── ПЛАНЕТА: земля под ростком + дуга горизонта ──
+  // НЕ рисуем кольцо вокруг подножия (давало иллюзию чаши). Рисуем:
+  //  (1) землю как сетку на поверхности сферы ВПЕРЁД-И-ВНИЗ от ростка,
+  //      затемняющуюся к горизонту;
+  //  (2) линию горизонта — где сфера планеты уходит из виду.
+  {
+    const footx=camTarget[0], footy=camTarget[1], footz=camTarget[2];
+    const fr=Math.sqrt(footx*footx+footy*footy+footz*footz)+1e-6;
+    // up = радиаль (локальный «вверх», от центра планеты наружу)
+    const ux=footx/fr, uy=footy/fr, uz=footz/fr;
+    // касательный базис на поверхности
+    let t1x=-uy, t1y=ux, t1z=0; let t1n=Math.hypot(t1x,t1y,t1z)+1e-9;
+    t1x/=t1n; t1y/=t1n; t1z/=t1n;
+    const t2x=uy*t1z-uz*t1y, t2y=uz*t1x-ux*t1z, t2z=ux*t1y-uy*t1x;
+    // точка на поверхности по угловым смещениям (вдоль дуги сферы)
+    function surf(da, db){
+      // малые углы: точка = R·(cos·up + sin·направление)
+      const ang=Math.sqrt(da*da+db*db);
+      if(ang<1e-6) return [ux*PLANET_R, uy*PLANET_R, uz*PLANET_R];
+      const dirx=(t1x*da+t2x*db)/ang, diry=(t1y*da+t2y*db)/ang, dirz=(t1z*da+t2z*db)/ang;
+      const c=Math.cos(ang), s=Math.sin(ang);
+      return [ (ux*c+dirx*s)*PLANET_R, (uy*c+diry*s)*PLANET_R, (uz*c+dirz*s)*PLANET_R ];
+    }
+    // сетка земли: угловой радиус до ~горизонта (acos(R/(R+h)) ≈ при h малом мал,
+    // но для вида берём заметный сектор). шаг по углу.
+    const maxAng=0.9;            // угловой охват земли (радианы вдоль сферы)
+    const rings=7, segs=48;
+    ctx.lineWidth=0.5;
+    // концентрические дуги (постоянный угол от подножия) — но рисуем их как
+    // КРИВЫЕ на сфере, не как кольцо в касательной плоскости: дальние уходят вниз
+    for(let ri=1;ri<=rings;ri++){
+      const ang=maxAng*ri/rings;
+      const fade=0.28*(1-ri/(rings+1));   // дальше — бледнее
+      ctx.strokeStyle='rgba(70,100,140,'+fade.toFixed(3)+')';
+      ctx.beginPath(); let first=true, any=false;
+      for(let si=0;si<=segs;si++){
+        const th=2*Math.PI*si/segs;
+        const q=surf(ang*Math.cos(th), ang*Math.sin(th));
+        const p=project(q[0],q[1],q[2],W_,H_);
+        // рисуем только то, что перед камерой (sz<граница) — заднюю часть сферы прячем
+        if(p.sz<2.2){ if(first){ctx.moveTo(p.sx,p.sy);first=false;any=true;} else ctx.lineTo(p.sx,p.sy);}
+        else first=true;
+      }
+      if(any) ctx.stroke();
+    }
+    // радиальные линии (меридианы от подножия наружу)
+    for(let si=0;si<24;si++){
+      const th=2*Math.PI*si/24;
+      ctx.strokeStyle='rgba(70,100,140,0.12)';
+      ctx.beginPath(); let first=true;
+      for(let k=0;k<=rings*2;k++){
+        const ang=maxAng*k/(rings*2);
+        const q=surf(ang*Math.cos(th), ang*Math.sin(th));
+        const p=project(q[0],q[1],q[2],W_,H_);
+        if(p.sz<2.2){ if(first){ctx.moveTo(p.sx,p.sy);first=false;} else ctx.lineTo(p.sx,p.sy);}
+        else first=true;
+      }
+      ctx.stroke();
+    }
+  }
+
+  let amax=0; for(let i=0;i<N;i++) if(alpha[i]>amax) amax=alpha[i];
+  if(amax<1e-9) amax=1;
+
+  // проецируем все узлы
+  const proj=[];
+  for(let i=0;i<N;i++){
+    proj.push(project(pos[i][0],pos[i][1],pos[i][2], W_,H_));
+  }
+
+  // ── треугольники: собираем с z для сортировки ──
+  const tris=[];
+  for(let s=0;s<S2.length;s++){
+    const [i,j,k]=S2[s];
+    if(i>=N||j>=N||k>=N) continue;
+    if(!alive[i]||!alive[j]||!alive[k]) continue;  // v1.6
+    const h=H2[s]; if(h<0.015) continue;
+    const zAvg=(proj[i].sz+proj[j].sz+proj[k].sz)/3;
+    tris.push({i,j,k,h,zAvg});
+  }
+  // рисуем дальние треугольники первыми (painter's algorithm)
+  tris.sort((a,b)=>a.zAvg-b.zAvg);
+
+  for(const t of tris){
+    const {i,j,k,h}=t;
+    const cRe=(psiRe[i]+psiRe[j]+psiRe[k])/3;
+    const cIm=(psiIm[i]+psiIm[j]+psiIm[k])/3;
+    const ph=Math.atan2(cIm,cRe);
+    const hue=((ph/Math.PI+1)/2*180+155)%360;
+    // нормаль для освещения (упрощённо через z)
+    const avgSc=(proj[i].sc+proj[j].sc+proj[k].sc)/3;
+    const light=0.35+avgSc*0.65;
+    const fa=Math.min(0.28, h*0.32)*light;
+    ctx.fillStyle='hsla('+hue+',72%,58%,'+fa+')';
+    ctx.beginPath();
+    ctx.moveTo(proj[i].sx, proj[i].sy);
+    ctx.lineTo(proj[j].sx, proj[j].sy);
+    ctx.lineTo(proj[k].sx, proj[k].sy);
+    ctx.closePath();
+    ctx.fill();
+    // контур грани — чуть заметный
+    ctx.strokeStyle='hsla('+hue+',60%,70%,'+(fa*0.6)+')';
+    ctx.lineWidth=0.5;
+    ctx.stroke();
+  }
+
+  // ── рёбра ──
+  const edges=[];
+  for(let i=0;i<N;i++){ if(!alive[i])continue; for(let j=i+1;j<N;j++){ if(!alive[j])continue;
+    const w=W[i*N+j]; if(w<GEO_W_MIN*2) continue;
+    edges.push({i,j,w,zAvg:(proj[i].sz+proj[j].sz)/2});
+  }}
+  edges.sort((a,b)=>a.zAvg-b.zAvg);
+  for(const e of edges){
+    const {i,j,w}=e;
+    const depthFade=Math.max(0.1, 0.15+(proj[i].sc+proj[j].sc)*0.35);
+    const alp=Math.min(0.55, w*9)*depthFade;
+    const hue=160+A[i*N+j]*180;
+    ctx.strokeStyle='hsla('+hue+',60%,60%,'+alp+')';
+    ctx.lineWidth=Math.min(2.5, w*4.5);
+    ctx.beginPath();
+    ctx.moveTo(proj[i].sx, proj[i].sy);
+    ctx.lineTo(proj[j].sx, proj[j].sy);
+    ctx.stroke();
+  }
+
+  // ── узлы (поверх всего) ──
+  // сортируем по z — дальние под ближними
+  const nodeOrder=[...Array(N).keys()].filter(i=>alive[i]).sort((a,b)=>proj[a].sz-proj[b].sz);
+  for(const i of nodeOrder){
+    const p=proj[i];
+    const nm=Math.sqrt(psiRe[i]**2+psiIm[i]**2);
+    const ph=Math.atan2(psiIm[i],psiRe[i]);
+    let hue;
+    if(colorByMod){
+      // v1.6: подсветка по доминирующей модальности узла (звук/свет/символ)
+      const mp=modPref[i]; let dm=0; for(let k=1;k<3;k++) if(mp[k]>mp[dm]) dm=k;
+      hue=MOD_HUE[dm];
+    } else {
+      hue=((ph/Math.PI+1)/2*180+155)%360;
+    }
+    const aN=alpha[i]/amax;
+    // размер зависит от nm и перспективы
+    const r=(2.2+nm*3.2)*p.sc*1.4;
+    // свечение для высокоальфа узлов
+    if(aN>0.55){
+      ctx.strokeStyle='hsla(270,80%,70%,'+(aN*0.5)+')';
+      ctx.lineWidth=0.8;
+      ctx.beginPath(); ctx.arc(p.sx,p.sy,r+2+aN*3,0,Math.PI*2); ctx.stroke();
+    }
+    // глубинное затемнение (дальние чуть темнее)
+    const light=Math.max(0.5, p.sc*1.2);
+    ctx.fillStyle='hsl('+hue+',65%,'+(Math.round(50*light))+'%)';
+    ctx.beginPath(); ctx.arc(p.sx,p.sy,r,0,Math.PI*2); ctx.fill();
+  }
+
+  if(N>0){
+    const k=alphaArgmax();
+    const aEnt=entropy(alpha);
+    const lbl=document.getElementById('focus-label');
+    if(aEnt<ANSWER_ENTROPY_MAX) lbl.textContent='фокус: #'+k+' · H̄(α)='+aEnt.toFixed(2);
+    else lbl.textContent='рассеянно · H̄(α)='+aEnt.toFixed(2);
+  }
+
+  if(showMinimap) drawMinimap(W_,H_);
+  drawSky(W_,H_);
+}
+
+// v1.7: НЕБО — дуга горизонта вверху холста с диском Солнца и Луны.
+// Положение по дуге = угол суток; высота диска над линией = высота над горизонтом.
+function drawSky(W_,H_){
+  const ctx=gctx;
+  const cx=W_*0.5, horizon=64, r=Math.min(W_*0.42, 220);
+  ctx.save();
+  // линия горизонта
+  ctx.strokeStyle='rgba(120,140,180,0.12)'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(8,horizon); ctx.lineTo(W_-8,horizon); ctx.stroke();
+  // позиция тела на дуге: x по фазе суток, y по высоте
+  const place=(alt, ang)=>{
+    const px = cx + Math.cos(ang)*r;
+    const py = horizon - Math.max(-0.2,alt)*r*0.45;
+    return [px,py];
+  };
+  // СОЛНЦЕ
+  if(sunAlt > -0.15){
+    const [sx,sy]=place(sunAlt, circAngle);
+    const g=ctx.createRadialGradient(sx,sy,1,sx,sy,16);
+    g.addColorStop(0,'rgba(255,225,140,'+(0.5+sunLight*0.5).toFixed(2)+')');
+    g.addColorStop(1,'rgba(255,180,60,0)');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(sx,sy,16,0,7); ctx.fill();
+    ctx.fillStyle='rgba(255,235,170,'+(0.6+sunLight*0.4).toFixed(2)+')';
+    ctx.beginPath(); ctx.arc(sx,sy,5,0,7); ctx.fill();
+  }
+  // ЛУНА — с фазовым терминатором
+  if(moonAlt > -0.15){
+    const [mx2,my2]=place(moonAlt, circAngle - step/MOON_PERIOD*2*Math.PI);
+    ctx.fillStyle='rgba(40,48,70,0.9)';
+    ctx.beginPath(); ctx.arc(mx2,my2,5,0,7); ctx.fill();
+    // освещённая доля
+    ctx.fillStyle='rgba(200,210,235,'+(0.35+moonPhase*0.55).toFixed(2)+')';
+    ctx.beginPath();
+    ctx.arc(mx2,my2,5, -Math.PI/2, Math.PI/2, false);          // правый полудиск
+    const k=(moonPhase-0.5)*2;                                  // -1..1 кривизна терминатора
+    ctx.ellipse(mx2,my2,5*Math.abs(k),5, 0, Math.PI/2, -Math.PI/2, k>0);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+// v1.6: МИНИ-КАРТА — весь росток целиком в углу (родилась из бага «маленького
+// экрана»). Своя проекция с авто-вписыванием: видно всю структуру, не крутя камеру.
+function drawMinimap(W_,H_){
+  if(N===0) return;
+  const ctx=gctx;
+  const mw=Math.min(150, W_*0.34), mh=mw*0.82;   // размер мини-окна
+  const mx=W_-mw-8, my=H_-mh-8;                  // правый нижний угол
+  // фон
+  ctx.save();
+  ctx.fillStyle='rgba(10,12,20,0.72)';
+  ctx.strokeStyle='rgba(120,140,180,0.35)';
+  ctx.lineWidth=1;
+  ctx.fillRect(mx,my,mw,mh); ctx.strokeRect(mx,my,mw,mh);
+  // проекция всех живых узлов фиксированным поворотом (без слежения камеры),
+  // авто-масштаб по разбросу — весь росток влезает целиком
+  let cx=0,cy=0,cz=0,n=0;
+  for(let i=0;i<N;i++){ if(!alive[i])continue; cx+=pos[i][0];cy+=pos[i][1];cz+=pos[i][2];n++; }
+  if(n===0){ctx.restore();return;}
+  cx/=n;cy/=n;cz/=n;
+  const cy_=Math.cos(rotY), sy_=Math.sin(rotY);
+  const pts=[]; let rmax=1e-6;
+  for(let i=0;i<N;i++){ if(!alive[i])continue;
+    let x=pos[i][0]-cx, y=pos[i][1]-cy, z=pos[i][2]-cz;
+    const xr=x*cy_-z*sy_;                    // поворот вокруг Y, как основной вид
+    pts.push({i, px:xr, py:y});
+    const r=Math.hypot(xr,y); if(r>rmax) rmax=r;
+  }
+  const sc=(Math.min(mw,mh)*0.42)/rmax;
+  const ox=mx+mw/2, oy=my+mh/2;
+  // рёбра (тонко)
+  ctx.globalAlpha=0.5; ctx.strokeStyle='rgba(120,180,200,0.25)'; ctx.lineWidth=0.4;
+  ctx.beginPath();
+  for(const p of pts){
+    for(const q of pts){ if(q.i<=p.i)continue;
+      if(W[p.i*N+q.i]>GEO_W_MIN*3){
+        ctx.moveTo(ox+p.px*sc, oy+p.py*sc);
+        ctx.lineTo(ox+q.px*sc, oy+q.py*sc);
+      }
+    }
+  }
+  ctx.stroke();
+  // узлы
+  ctx.globalAlpha=1;
+  for(const p of pts){
+    let hue;
+    if(colorByMod){ const mp=modPref[p.i]; let dm=0; for(let k=1;k<3;k++) if(mp[k]>mp[dm])dm=k; hue=MOD_HUE[dm]; }
+    else { const ph=Math.atan2(psiIm[p.i],psiRe[p.i]); hue=((ph/Math.PI+1)/2*180+155)%360; }
+    ctx.fillStyle='hsl('+hue+',70%,60%)';
+    ctx.fillRect(ox+p.px*sc-1, oy+p.py*sc-1, 2, 2);
+  }
+  ctx.restore();
+}
+
+// ── управление вращением ──
+const gpEl=document.getElementById('graph-wrap');
+
+gpEl.addEventListener('mousedown',e=>{
+  dragActive=true; dragLast=[e.clientX,e.clientY];
+});
+window.addEventListener('mousemove',e=>{
+  if(!dragActive) return;
+  rotY+=(e.clientX-dragLast[0])*0.008;
+  rotX+=(e.clientY-dragLast[1])*0.008;
+  rotX=Math.max(-1.4,Math.min(1.4,rotX));
+  dragLast=[e.clientX,e.clientY];
+});
+window.addEventListener('mouseup',()=>{ dragActive=false; });
+
+gpEl.addEventListener('touchstart',e=>{
+  if(e.touches.length===1){
+    dragActive=true;
+    dragLast=[e.touches[0].clientX,e.touches[0].clientY];
+  }
+},{passive:true});
+gpEl.addEventListener('touchmove',e=>{
+  if(!dragActive||e.touches.length!==1) return;
+  rotY+=(e.touches[0].clientX-dragLast[0])*0.009;
+  rotX+=(e.touches[0].clientY-dragLast[1])*0.009;
+  rotX=Math.max(-1.4,Math.min(1.4,rotX));
+  dragLast=[e.touches[0].clientX,e.touches[0].clientY];
+},{passive:true});
+gpEl.addEventListener('touchend',()=>{ dragActive=false; },{passive:true});
+
+// ================================================================
+// ВНУТРЕННЕЕ ЗРЕНИЕ
+// ================================================================
+const vc=document.getElementById('vc');
+const vctx=vc.getContext('2d');
+
+function resizeVC(){
+  const v=document.getElementById('vision');
+  const w=v.clientWidth, h=v.clientHeight;
+  const W=(w>20)?w:320, H=(h>10)?h:60;   // v1.6: защита от нулевых размеров
+  vc.width=W*window.devicePixelRatio;
+  vc.height=H*window.devicePixelRatio;
+  vc.style.width=W+'px';
+  vc.style.height=H+'px';
+  vctx.setTransform(1,0,0,1,0,0);
+  vctx.scale(window.devicePixelRatio,window.devicePixelRatio);
+}
+
+function drawVision(){
+  const W_=vc.width/window.devicePixelRatio;
+  const H_=vc.height/window.devicePixelRatio;
+  const ctx=vctx;
+  ctx.clearRect(0,0,W_,H_);
+  if(N===0) return;
+
+  const barW=W_/N;
+  let amax=0; for(let i=0;i<N;i++) if(alpha[i]>amax) amax=alpha[i];
+  if(amax<1e-9) amax=1;
+
+  for(let i=0;i<N;i++){
+    const h=(alpha[i]/amax)*(H_-10);
+    const x=i*barW;
+    const ph=Math.atan2(psiIm[i],psiRe[i]);
+    const hue=((ph/Math.PI+1)/2*180+155)%360;
+    const a=.3+alpha[i]/amax*.7;
+    ctx.fillStyle='hsla('+hue+',70%,60%,'+a+')';
+    ctx.fillRect(x+barW*.15, H_-5-h, barW*.7, h);
+  }
+
+  // v1.6: засечки кластеров над столбиками — цвет = модальность кластера.
+  // Показываем при подсветке модальностей (постоянно) или вспышкой после «анализ».
+  const showNotch = colorByMod || analyzeFlash>0;
+  if(showNotch){
+    if(!nodeClusterMod || nodeClusterMod.length!==N || step-clusterMapStep>60) refreshClusterMap();
+    const flashA = analyzeFlash>0 ? Math.min(1, analyzeFlash/60) : 0.75;  // вспышка плавно гаснет
+    for(let i=0;i<N;i++){
+      if(!alive[i]) continue;
+      const dm=nodeClusterMod[i];
+      if(dm<0) continue;                       // узел не в кластере — без засечки
+      const h=(alpha[i]/amax)*(H_-10);
+      const x=i*barW;
+      ctx.fillStyle='hsla('+MOD_HUE[dm]+',85%,62%,'+flashA+')';
+      // засечка сверху столбика (или у пола, если столбик нулевой)
+      const ny=Math.max(2, H_-5-h-4);
+      ctx.fillRect(x+barW*.1, ny, barW*.8, 2.5);
+    }
+    if(analyzeFlash>0) analyzeFlash--;
+  }
+
+  const aEnt=entropy(alpha);
+  const ey=H_-5-(1-aEnt)*(H_-10);
+  ctx.strokeStyle='rgba(255,200,68,.5)';
+  ctx.lineWidth=.8;
+  ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.moveTo(0,ey); ctx.lineTo(W_,ey); ctx.stroke();
+  ctx.setLineDash([]);
+
+  const tau=currentTau();
+  let hAvg=0,cnt=0;
+  for(let i=0;i<N;i++) for(let j=0;j<N;j++){hAvg+=hEff(H[i*N+j]);cnt++;}
+  hAvg/=cnt;
+  document.getElementById('vmet').textContent =
+    'τ='+tau.toFixed(2)+' · H̄(α)='+aEnt.toFixed(2)+' · H̄='+hAvg.toFixed(2);
+}
+
+// ================================================================
+// UI
+// ================================================================
+function updateUI(){
+  document.getElementById('s-step').textContent=step;
+  document.getElementById('s-nodes').textContent=N;
+  document.getElementById('s-tri').textContent=S2.length;
+  let edges=0; for(let i=0;i<N*N;i++) if(W[i]>DEATH_THR) edges++;
+  document.getElementById('node-count').textContent='N='+N+' E='+Math.floor(edges/2)+' △='+S2.length;
+  document.getElementById('s-res').textContent=totalRes;
+  document.getElementById('s-ans').textContent=totalAns;
+  document.getElementById('s-life').textContent=lifeNum;
+
+  const btnRst=document.getElementById('bn-rst');
+  if(echoReady && dead){
+    btnRst.textContent='перерождение';
+    btnRst.classList.remove('d');
+    btnRst.classList.add('g');
+  } else {
+    btnRst.textContent='сброс';
+    btnRst.classList.remove('g');
+    btnRst.classList.add('d');
+  }
+
+  const ep=Math.round(energy);
+  document.getElementById('efill').style.width=ep+'%';
+  document.getElementById('s-energy').textContent=ep+'%';
+
+  const bh=document.getElementById('b-hunger');
+  if(energy<15){bh.textContent='голод';bh.className='hbadge hng';}
+  else if(energy<35){bh.textContent='голоден';bh.className='hbadge hng';}
+  else if(energy<60){bh.textContent='умеренно';bh.className='hbadge';}
+  else{bh.textContent='сыт';bh.className='hbadge';}
+
+  const bs=document.getElementById('b-state');
+  if(dead){bs.textContent='мёртв';bs.className='hbadge hng';}
+  else if(sleeping){bs.textContent='сон';bs.className='hbadge slp';}
+  else{bs.textContent='активен';bs.className='hbadge';}
+
+  const bp=document.getElementById('b-phase');
+  bp.textContent=circPhase;
+  bp.className=circPhase==='день'?'hbadge on':'hbadge';
+
+  if(step-lastAnswerStep>800 && !sleeping){
+    const el=document.getElementById('reflection');
+    if(!el.classList.contains('fade')) el.classList.add('fade');
+  }
+}
+
+// ================================================================
+// ГЛАВНЫЙ ЦИКЛ
+// ================================================================
+function tick(){
+  if(!paused&&!sleeping&&!dead){
+    for(let s=0;s<speed;s++){
+      const{LsRe,LAIm}=buildL();
+      updateField(LsRe,LAIm);
+      updateGeom(LsRe,LAIm);
+      updateCircadian();
+      if(step%4===0) updateAlpha(0);
+      // v0.97: эхо-петля — внутренний голос системы
+      if(step%ECHO_LOOP_PERIOD===0) echoLoop();
+      if(step%TRI_BIRTH_INTERVAL===0 && energy>25) maybeBirthTriangles(energy>55?10:5);
+      if(step===200) maybeBirthTriangles(20); // v1.1b: принудительный первый запуск
+      // v1.6: непрерывный морфогенез — среда сама решает N и места узлов.
+      if(step%MORPH_PERIOD===0 && energy>30) morphStep();
+      // v1.6: бюджетное растворение — метаболизм ставит потолок N
+      budgetDissolveCheck();
+      updateTriangles();
+      trianglesBackreaction();
+      physics3D();
+      if(step%600===0) healthCheck();
+      step++;
+    }
+  }
+  // v1.6: пока canvas не получил валидный размер — пробуем пере-измерить.
+  // Лечит спираль на старте/повороте, когда clientWidth был 0.
+  if(!gcReady){ resizeGC(); resizeVC(); }
+  drawGraph();
+  drawVision();
+  updateUI();
+  requestAnimationFrame(tick);
+}
+
+// ================================================================
+// СОБЫТИЯ
+// ================================================================
+document.getElementById('r-eps').addEventListener('input',e=>{
+  eps=parseFloat(e.target.value);
+  document.getElementById('v-eps').textContent=eps.toFixed(2);
+});
+document.getElementById('r-spd').addEventListener('input',e=>{
+  speed=parseInt(e.target.value);
+  document.getElementById('v-spd').textContent=speed;
+});
+document.getElementById('r-grow').addEventListener('input',e=>{
+  growStage=parseInt(e.target.value);
+  const [a,b]=GROW_STAGES[growStage];
+  const warn = b>=5 ? ' ⚠' : '';   // высокие ступени тяжелы для телефона
+  document.getElementById('v-grow').textContent=a+'..'+b+warn;
+});
+
+function sendText(){
+  const inp=document.getElementById('txt-input');
+  const txt=inp.value.trim();
+  if(!txt) return;
+  const x=textToSignal(txt);
+  probe(x,'"'+txt+'"',txt,2,ENERGY_WORD);
+  inp.value='';
+}
+document.getElementById('btn-send').addEventListener('click',sendText);
+document.getElementById('txt-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){e.preventDefault();sendText();}
+});
+
+// v1.3: звук = низкая полоса, свет = высокая полоса,
+// символ = циклически 4 стороны (→ ↑ ← ↓)
+document.getElementById('bn-snd').addEventListener('click',()=>probe(genSigPhys('sound',-1),'звук',null,0,ENERGY_BUTTON));
+document.getElementById('bn-img').addEventListener('click',()=>probe(genSigPhys('light',-1),'свет',null,1,ENERGY_BUTTON));
+document.getElementById('bn-sym').addEventListener('click',()=>{
+  const side=symSide%4; symSide++;
+  probe(genSigPhys('sound',side),'символ '+SIDE_GLYPH[side],null,2,ENERGY_BUTTON);
+});
+document.getElementById('bn-slp').addEventListener('click',()=>sleepCycle());
+
+document.getElementById('bn-pau').addEventListener('click',function(){
+  paused=!paused;
+  this.textContent=paused?'пуск':'пауза';
+});
+
+document.getElementById('bn-rst').addEventListener('click',()=>{
+  if(echoReady){
+    lifeNum++;
+    slog('◌ перерождение → жизнь #'+lifeNum,'le brth');
+  } else {
+    lifeNum=1;
+    echoH=null; echoN=0; echoPos=null; echoAlpha=null; echoWords=[];
+    slog('сброс','le dth');
+  }
+  step=0;energy=50;totalRes=0;totalAns=0;
+  resonanceHistory=[];
+  sleeping=false;sleepTimer=1200;dead=false;
+  lastAnswerStep=-9999;lastAnswer='';
+  echoSelfResCount=0;  // v0.97
+  symSide=0;           // v1.3
+  S2=[]; H2=[]; S2age=[]; S2keys=new Set(); echoS2=null; echoH2=null;
+  document.getElementById('sleep-overlay').classList.remove('on');
+  document.getElementById('sleep-txt').classList.remove('on');
+  initSystem(32);
+});
+
+document.getElementById('bn-anl').addEventListener('click',()=>{ reportClusters(); refreshClusterMap(); analyzeFlash=240; });
+document.getElementById('bn-mod').addEventListener('click',function(){
+  colorByMod=!colorByMod;
+  this.style.opacity=colorByMod?'1':'0.6';
+  slog(colorByMod?'подсветка по модальности: ВКЛ (циан=звук, маджента=свет, янтарь=символ)':'подсветка: фаза ψ','le');
+});
+
+window.addEventListener('resize',()=>{
+  resizeGC(); resizeVC();
+});
+
+resizeGC();
+resizeVC();
+initSystem(32);
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
